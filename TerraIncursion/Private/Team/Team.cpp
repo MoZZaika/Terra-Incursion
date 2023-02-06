@@ -11,6 +11,14 @@ ATeam::ATeam()
 	PrimaryActorTick.bCanEverTick = true;
 
 
+	mainSlot = CreateDefaultSubobject<USceneComponent>("MainSlot");
+	mainSlot->SetAutoActivate(true);
+	mainSlot->SetMobility(EComponentMobility::Movable);
+	mainSlot->AttachTo(GetRootComponent());
+
+	if (mainSlot == nullptr)
+		return;
+
 	int slotIndex = 0;
 	for (auto& it : warriors)
 	{
@@ -25,7 +33,7 @@ ATeam::ATeam()
 
 		newSlot->SetAutoActivate(true);
 		newSlot->SetMobility(EComponentMobility::Movable);
-		newSlot->AttachTo(GetRootComponent());
+		newSlot->AttachToComponent(mainSlot, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 		it.slot = newSlot;
 
@@ -99,6 +107,57 @@ void ATeam::Tick(float DeltaTime)
 
 		warrior.controller->MoveToLocation(warrior.slot->GetComponentLocation());
 	}
+
+	auto playerController = dynamic_cast<APlayerController*>(GetController());
+
+	if (playerController == nullptr)
+		return;
+
+	FVector mousePosition;
+	FVector mouseDirection;
+
+	if (!playerController->DeprojectMousePositionToWorld(mousePosition, mouseDirection))
+		return;
+
+	const float mouseTraceDistance = -mousePosition.Z / mouseDirection.Z;
+
+	mousePosition += mouseDirection * mouseTraceDistance;
+
+	FVector position = mainSlot->GetComponentLocation();
+	position.Z = 0;
+
+	FVector viewDirection = mousePosition - position;
+	viewDirection.Normalize();
+
+	auto c = FVector::CrossProduct(mainSlot->GetForwardVector(), viewDirection);
+	const float dotValue = c.Size();
+	float angle = FMath::RadiansToDegrees(FMath::Asin(dotValue));
+	
+	if (c.Z < 0)
+		angle *= -1;
+	
+	const float eps = 0.00001;
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Black, c.ToString());
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, FString::SanitizeFloat(a2, 3));
+
+
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Black, mousePosition.ToString());
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::White, position.ToString());
+
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, GetActorForwardVector().ToString());
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, viewDirection.ToString());
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString::SanitizeFloat(angle, 3));
+	}
+
+
+	if (FMath::Abs(angle) <= eps)
+		return;
+
+	auto rotator = GetTransform().Rotator().Add(0, angle, 0);
+	mainSlot->AddWorldRotation(rotator);
 
 }
 

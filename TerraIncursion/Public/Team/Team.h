@@ -45,6 +45,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "TeamMovment")
 	float movmentSpeed = 1;
 
+	UPROPERTY(EditDefaultsOnly, Category = "TeamMovment")
+	float rotationSpeed = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+	USceneComponent* mainSlot = nullptr;
+
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USceneComponent*> slots;
 
