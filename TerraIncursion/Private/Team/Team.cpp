@@ -106,6 +106,7 @@ void ATeam::Tick(float DeltaTime)
 			break;
 
 		warrior.controller->MoveToLocation(warrior.slot->GetComponentLocation());
+		warrior.instance->SetActorRotation(mainSlot->GetComponentRotation());
 	}
 
 	auto playerController = dynamic_cast<APlayerController*>(GetController());
