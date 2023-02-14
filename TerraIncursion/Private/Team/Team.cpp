@@ -12,7 +12,7 @@ ATeam::ATeam()
 	CHECK_ERROR(mainSlot, TEXT("mainSlot is nullptr!"));
 	mainSlot->SetAutoActivate(true);
 	mainSlot->SetMobility(EComponentMobility::Movable);
-	mainSlot->AttachTo(GetRootComponent());
+	mainSlot->SetupAttachment(GetRootComponent());
 
 	uint32 slotIndex = 0;
 	const FString slotNamePrefix = TEXT("Slot_");
@@ -27,7 +27,7 @@ ATeam::ATeam()
 
 		newSlot->SetAutoActivate(true);
 		newSlot->SetMobility(EComponentMobility::Movable);
-		newSlot->AttachToComponent(mainSlot, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		newSlot->SetupAttachment(mainSlot);
 
 		warrior.slot = newSlot;
 
