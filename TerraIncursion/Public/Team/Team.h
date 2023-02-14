@@ -16,16 +16,13 @@ struct FWarrior
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	USceneComponent* slot;
+	USceneComponent* slot = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACharacter> warriorClass;
 
-	UPROPERTY(EditAnywhere)
-	ACharacter* instance;
-
-	UPROPERTY()
-	AAIController* controller;
+	ACharacter* instance = nullptr;
+	AAIController* controller = nullptr;
 };
 
 UCLASS()
@@ -34,22 +31,20 @@ class TERRAINCURSION_API ATeam : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
+	
 	ATeam();
-
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
 	static const uint32 maxWarriorCount = 4;
+	FVector moveDirection = FVector::ZeroVector;
 
-	UPROPERTY(EditDefaultsOnly, Category = "TeamMovment")
-	float movmentSpeed = 1;
+	UPROPERTY(EditAnywhere)
+	FWarrior warriors[maxWarriorCount];
 
-	UPROPERTY(EditDefaultsOnly, Category = "TeamMovment")
-	float rotationSpeed = 1;
+	UPROPERTY(EditDefaultsOnly)
+	float teamMovmentSpeed = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	USceneComponent* mainSlot = nullptr;
@@ -57,21 +52,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USceneComponent*> slots;
 
-	//UPROPERTY(EditDefaultsOnly)
-	TArray<UPrimitiveComponent*> lineTraceToSlots;
-
-	UPROPERTY(EditAnywhere)
-	FWarrior warriors [maxWarriorCount];
-
-protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-private:	
-
-	FVector moveDirection = FVector::ZeroVector;
-
 	void MoveLeftRight(const float axisValue);
 	void MoveForwardBack(const float axisValue);
-
 };
