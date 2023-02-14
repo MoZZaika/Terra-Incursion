@@ -3,6 +3,7 @@
 #include "Team/Team.h"
 #include "Engine/World.h"
 #include "Camera/CameraComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values
 ATeam::ATeam()
@@ -22,7 +23,7 @@ ATeam::ATeam()
 	int slotIndex = 0;
 	for (auto& it : warriors)
 	{
-		FString componentName = TEXT("Slot_") + FString::FromInt(slotIndex);
+		const FString componentName = TEXT("Slot_") + FString::FromInt(slotIndex);
 
 		auto newSlot = CreateDefaultSubobject<USceneComponent>(static_cast<FName>(componentName));
 
@@ -30,6 +31,15 @@ ATeam::ATeam()
 			return;
 
 		slots.Add(newSlot);
+
+		const FString traceComponentName = TEXT("Trace_") + FString::FromInt(slotIndex);
+
+		/*auto newLineTrace = CreateDefaultSubobject<UPrimitiveComponent>(static_cast<FName>(traceComponentName));
+
+		if (newLineTrace == nullptr)
+			return;
+
+		lineTraceToSlots.Add(newLineTrace);*/
 
 		newSlot->SetAutoActivate(true);
 		newSlot->SetMobility(EComponentMobility::Movable);
@@ -100,16 +110,49 @@ void ATeam::Tick(float DeltaTime)
 
 	this->AddMovementInput(moveDirection, movmentSpeed);
 
+	FCollisionQueryParams collisionQueryParams = { };
+
+	for (auto& warrior : warriors)
+	{
+		collisionQueryParams.AddIgnoredActor(warrior.instance);
+	}
+
 	for (auto& warrior : warriors)
 	{
 		if (warrior.controller == nullptr)
 			break;
 
-		warrior.controller->MoveToLocation(warrior.slot->GetComponentLocation());
+		UPrimitiveComponent* c = Cast<UPrimitiveComponent>(GetRootComponent());
+		
+		
+		FHitResult hitResult = { };
+
+
+		//bool hit = c->LineTraceComponent(hitResult,, , &collisionQueryParams);
+
+		FVector HitLocation = {};
+		FVector HitNormal;
+		FName BoneName;
+		FHitResult OutHit;
+
+		/*const bool hit = c->K2_LineTraceComponent(warrior.instance->GetActorLocation(), warrior.slot->GetComponentLocation(), true, true, false,
+			HitLocation, HitNormal, BoneName, OutHit);*/
+
+		const bool hit = GetWorld()->LineTraceSingleByChannel(OutHit, warrior.instance->GetActorLocation(), warrior.slot->GetComponentLocation(), ECC_Visibility, collisionQueryParams);
+
+		if (hit)
+		{
+			warrior.controller->MoveToLocation(slots[0]->GetComponentLocation());
+		}
+		else
+		{
+			warrior.controller->MoveToLocation(warrior.slot->GetComponentLocation());
+		}
+
 		warrior.instance->SetActorRotation(mainSlot->GetComponentRotation());
 	}
 
-	auto playerController = dynamic_cast<APlayerController*>(GetController());
+	auto playerController = Cast<APlayerController>(GetController());
 
 	if (playerController == nullptr)
 		return;

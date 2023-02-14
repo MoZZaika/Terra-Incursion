@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/SceneComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "AIController.h"
 #include "Team.generated.h"
 
@@ -42,6 +43,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	static const uint32 maxWarriorCount = 4;
+
 	UPROPERTY(EditDefaultsOnly, Category = "TeamMovment")
 	float movmentSpeed = 1;
 
@@ -54,8 +57,11 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USceneComponent*> slots;
 
+	//UPROPERTY(EditDefaultsOnly)
+	TArray<UPrimitiveComponent*> lineTraceToSlots;
+
 	UPROPERTY(EditAnywhere)
-	FWarrior warriors [4];
+	FWarrior warriors [maxWarriorCount];
 
 protected:
 	// Called when the game starts or when spawned
