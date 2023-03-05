@@ -2,8 +2,10 @@
 
 
 #include "WeaponComponent.h"
+
 #include "GameFramework/Character.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogWeaponComponent, All, All)
 // Sets default values for this component's properties
 UWeaponComponent::UWeaponComponent()
 {
@@ -22,24 +24,24 @@ void UWeaponComponent::BeginPlay()
 
 	SpawnWeapon();
 
-	UE_LOG(LogTemp, Display, TEXT("%s Spawned"), *CurrentWeapon->GetName());
-	// ...
-
+	UE_LOG(LogWeaponComponent, Display, TEXT("%s Spawned"), *CurrentWeapon->GetName());
 }
 
 void UWeaponComponent::SpawnWeapon() {
 
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (!Character || !GetWorld()) return;
-
 	const FTransform GeometryTransform = FTransform(Character->GetActorRotation(), Character->GetActorLocation());
-	UE_LOG(LogTemp, Display, TEXT("%s"), *GeometryTransform.ToString());
-	auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, GeometryTransform);
+
+	auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass);
 	if (!Weapon) return;
+
+	Weapon->SetActorScale3D(WeaponClass->GetDefaultObject<ABaseWeapon>()->GetActorRelativeScale3D());
 	Weapon->SetOwner(Character);
 	CurrentWeapon = Weapon;
 	AttachWeaponToSocket(Weapon,Character->GetMesh(),WeaponArmorySocketName);
 	
+
 }
 
 void UWeaponComponent::StartAttack() {
@@ -49,6 +51,6 @@ void UWeaponComponent::StartAttack() {
 void UWeaponComponent::AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName) {
 	if (!Weapon || !SceneComponent) return;
 
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, false);
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, false);
 	Weapon->AttachToComponent(SceneComponent, AttachmentRules, SocketName);
 }

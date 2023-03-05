@@ -74,6 +74,21 @@ void ATerraIncursionCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATerraIncursionCharacter::OnResetVR);
+
+	//attack input
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ATerraIncursionCharacter::Attack);
+
+}
+
+void ATerraIncursionCharacter::Attack() {
+
+	UE_LOG(LogTemp, Display, TEXT("Attack action\n"));
+	auto WeaponComponent = FindComponentByClass<UWeaponComponent>();
+	if (!WeaponComponent) {
+		UE_LOG(LogTemp, Display, TEXT("Character didn`t find WeaponComponent \n"));
+		return;
+	}
+	WeaponComponent->StartAttack();
 }
 
 

@@ -17,6 +17,7 @@ public:
 	// Sets default values for this component's properties
 	UWeaponComponent();
 
+	UFUNCTION()
 	void StartAttack();
 
 protected:
@@ -25,6 +26,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		TSubclassOf<AActor> WeaponClass;
+
 
 	UPROPERTY()
 		ABaseWeapon* CurrentWeapon = nullptr;

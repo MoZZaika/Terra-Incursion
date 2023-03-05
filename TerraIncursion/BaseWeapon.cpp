@@ -3,6 +3,8 @@
 
 #include "BaseWeapon.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogBaseWeapon, All, All)
+
 // Sets default values
 ABaseWeapon::ABaseWeapon()
 {
@@ -12,6 +14,9 @@ ABaseWeapon::ABaseWeapon()
     BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 
     SetRootComponent(BaseMesh);
+
+    CollisionParams.bReturnPhysicalMaterial = true;
+    CollisionParams.AddIgnoredActor(GetOwner());
     
 }
 
@@ -19,11 +24,11 @@ ABaseWeapon::ABaseWeapon()
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+    
 
 }
 
 void ABaseWeapon::StartAttack() {
-	UE_LOG(LogTemp, Display, TEXT("attack"));
     isAttack = true;
 }
 
@@ -31,51 +36,7 @@ void ABaseWeapon::StopAttack() {
     isAttack = false;
 }
 
-void ABaseWeapon::PermamentAttack() {
-
-	FTimerHandle CountdownTimerHandle;
-	GetWorldTimerManager().SetTimer(CountdownTimerHandle, this, &ABaseWeapon::StartAttack, 4.0f, true);
-}
-
-bool ABaseWeapon::GetCharacterViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const
-{
-    const auto Character = Cast<ACharacter>(GetOwner());
-    if (!Character) return false;
-
-    ViewRotation = Character->GetController()->GetPawn()->GetActorRotation();
-	ViewLocation = Character->GetController()->GetPawn()->GetActorLocation();
-
-
-    return true;
-}
-
-bool ABaseWeapon::GetWeaponTransformData(FVector& ViewLocation, FRotator& ViewRotation) const
-{
-    const auto Character = Cast<ACharacter>(GetOwner());
-    if (!Character) return false;
-
-    FTransform Transform = GetTransform();
-    ViewRotation = Transform.GetRotation().Rotator();
-    ViewLocation = Transform.GetLocation();
-
-
-    return true;
-}
-
-
-bool ABaseWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const
-{
-    FVector ViewLocation;
-    FRotator ViewRotation;
-
-    if (!GetWeaponTransformData(ViewLocation, ViewRotation)) return false;
-
-
-    TraceStart = ViewLocation;
-    const FVector ShootDirection = ViewRotation.Vector();
-    TraceEnd = TraceStart + ShootDirection * TraceMaxDistance;
-    return true;
-}
+bool ABaseWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const { return false; }
 
 void ABaseWeapon::MakeAttack() {};
 
@@ -86,12 +47,28 @@ void ABaseWeapon::MakeHit(TArray<FHitResult>& HitResults, const FVector& TraceSt
     FCollisionObjectQueryParams ObjectCollisionParams;
     ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);
 
-    FCollisionQueryParams CollisionParams;
-    CollisionParams.bReturnPhysicalMaterial = true;
-    CollisionParams.AddIgnoredActor(GetOwner());
+    //FCollisionQueryParams CollisionParams;
+    //CollisionParams.bReturnPhysicalMaterial = true;
+    //CollisionParams.AddIgnoredActor(GetOwner());
     
 
     //GetWorld()->LineTraceMultiByChannel(HitResults, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, CollisionParams);
     GetWorld()->LineTraceMultiByObjectType(HitResults, TraceStart, TraceEnd, ObjectCollisionParams, CollisionParams);
+}
+
+
+void ABaseWeapon::MakeDamage(const FHitResult& HitResult) {
+    const auto DamagedActor = HitResult.GetActor();
+    if (!DamagedActor) return;
+
+    FPointDamageEvent PointDamageEvent;
+    PointDamageEvent.HitInfo = HitResult;
+    DamagedActor->TakeDamage(WeaponDamage, PointDamageEvent, GetController(), this);
+}
+
+AController* ABaseWeapon::GetController() const
+{
+    const auto Pawn = Cast<APawn>(GetOwner());
+    return Pawn ? Pawn->GetController() : nullptr;
 }
 

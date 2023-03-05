@@ -19,36 +19,33 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		UStaticMeshComponent* BaseMesh;
 
+	UPROPERTY(EditDefaultsOnly)
+		float WeaponDamage = 10.f;
+
 	virtual void StartAttack();
 
 	virtual void StopAttack();
 
-	void PermamentAttack();
 
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		float TraceMaxDistance = 1500.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		bool isAttack = false;
+	bool isAttack = false;
+
+	FCollisionQueryParams CollisionParams;
+	
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable)
 	virtual void MakeAttack();
 
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const;
 
-	bool GetCharacterViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const;
+	virtual void MakeDamage(const FHitResult& HitResult);
 
-	bool GetWeaponTransformData(FVector& ViewLocation, FRotator& ViewRotation) const;
+	virtual AController* GetController() const;
 
 	void MakeHit(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd);
-
-
-
-
 
 };

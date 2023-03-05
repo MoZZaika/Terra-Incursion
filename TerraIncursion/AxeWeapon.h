@@ -26,13 +26,17 @@ protected:
 		float AttackAngle = 30.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		float Roll = 0.5f;
+		float RotateSpeed = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FName BladeBegginingSocketName;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FName BladeEndSocketName;
+
+	float Angle = 0.f;
+
+	float ClockwiseDirection = -1.f;
 
 	FRotator StartAttackRotator;
 
@@ -41,11 +45,13 @@ protected:
 
 	virtual void StartAttack() override;
 
+	virtual void StopAttack() override;
+
 	void RayCast();
 
-	void Rotate();
+	void Rotate(float DeltaTime);
 
-	virtual bool GetBladeTraceData(FVector& TraceStart, FVector& TraceEnd) const;
+	bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const override;
 
 public:	
 	// Called every frame

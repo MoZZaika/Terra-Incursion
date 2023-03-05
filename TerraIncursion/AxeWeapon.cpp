@@ -3,7 +3,7 @@
 
 #include "AxeWeapon.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, All, All)
+DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, Display, All)
 
 // Sets default values
 AAxeWeapon::AAxeWeapon()
@@ -18,13 +18,8 @@ void AAxeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FVector Location;
-	FRotator Rotation;
-	GetCharacterViewPoint(Location,Rotation);
-	/*Rotation = OldRotation.Add(0.0f, 0.0f, -90.f);
-	Rotation = OldRotation.Add(0.0f, 0.5 * AttackAngle, 0.f);*/
-	//StartAttackRotator = OldRotation;
-	//PermamentAttack();
+	StartAttackRotator = GetActorRotation();
+
 }
 
 // Called every frame
@@ -35,6 +30,7 @@ void AAxeWeapon::Tick(float DeltaTime)
 	if (isAttack) {
 
 		RayCast();
+		Rotate(DeltaTime);
 
 	}
 
@@ -44,46 +40,68 @@ void AAxeWeapon::StartAttack() {
 
 	ABaseWeapon::StartAttack();
 
+	if (isAttack) {
+		return;
+	}
 
-	//FTransform Transform = GetActorTransform();
-	//FRotator OldRotation = Transform.GetRotation().Rotator();
-	
-	//FRotator NewRotation = FRotator(StartAttackRotator.Pitch, StartAttackRotator.Yaw + 0.5f * AttackAngle, StartAttackRotator.Roll);
-	//SetActorRotation(StartAttackRotator, ETeleportType::ResetPhysics);
-	//UE_LOG(LogTemp, Display, TEXT("attack rotation %s"), *NewRotation.ToString());
+	StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
+	SetActorRelativeRotation(StartAttackRotator);
+
 }
 
-void AAxeWeapon::Rotate() {
-	FTransform Transform = GetActorTransform();
-	FRotator OldRotation = Transform.GetRotation().Rotator();
+void AAxeWeapon::Rotate(float DeltaTime) {
 
+	FRotator Rotation = FRotator(-ClockwiseDirection * RotateSpeed * DeltaTime, 0.f, 0.f);
+	Angle += RotateSpeed * DeltaTime;
 
-	FRotator Rotation = FRotator(Roll, 0.f, 0.0f);
 	FQuat QuatRotation = FQuat(Rotation);
-	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+	AddActorLocalRotation(Rotation, false, 0, ETeleportType::None);
+	
+	//UE_LOG(LogAxeWeapon, Display, TEXT("%f"), Angle );
+	if ( Angle >= AttackAngle) {
+		StopAttack();
+	}
 
-	if (FMath::Abs(GetActorRotation().Pitch - StartAttackRotator.Pitch) >= AttackAngle) { StopAttack(); return; }
 }
+
+void AAxeWeapon::StopAttack() {
+
+	Super::StopAttack();
+
+	ClockwiseDirection *= -1;
+	StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
+	SetActorRelativeRotation(StartAttackRotator);
+	Angle = 0.f;
+
+	CollisionParams.ClearIgnoredActors();
+	CollisionParams.AddIgnoredActor(GetOwner());
+}
+
 
 void AAxeWeapon::RayCast() {
+
 	FVector TraceStart, TraceEnd;
 
-	GetBladeTraceData(TraceStart, TraceEnd);
+	if (!GetTraceData(TraceStart, TraceEnd)) {
+		return;
+	};
 
 	TArray<FHitResult> HitResults;
 	MakeHit(HitResults, TraceStart, TraceEnd);
-	DrawLineTraces(GetWorld(), TraceStart, TraceEnd, HitResults, 1.f);
+	DrawLineTraces(GetWorld(), TraceStart, TraceEnd, HitResults, 0.1f);
 	//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
 
 	for (auto& HitResult : HitResults)
 	{
 		UE_LOG(LogAxeWeapon, Display, TEXT("Hitted %s"), *HitResult.GetActor()->GetName());
+		MakeDamage(HitResult);
+		CollisionParams.AddIgnoredActor(HitResult.GetActor());
 		
 	}
-	UE_LOG(LogAxeWeapon, Display, TEXT("\n"));
+	//UE_LOG(LogAxeWeapon, Display, TEXT("\n-----------------\n"));
 }
 
-bool AAxeWeapon::GetBladeTraceData(FVector& TraceStart, FVector& TraceEnd) const
+bool AAxeWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const
 {
 	if (!BaseMesh) return false;
 

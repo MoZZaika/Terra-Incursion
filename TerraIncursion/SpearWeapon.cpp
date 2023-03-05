@@ -15,8 +15,7 @@ ASpearWeapon::ASpearWeapon()
 void ASpearWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	PermamentAttack();
+
 }
 
 // Called every frame
@@ -28,24 +27,6 @@ void ASpearWeapon::Tick(float DeltaTime)
 
 void ASpearWeapon::StartAttack() {
 	ABaseWeapon::StartAttack();
-
-	FVector TraceStart, TraceEnd;
-
-	GetTraceData(TraceStart, TraceEnd);
-
-	TArray<FHitResult> HitResults;
-	MakeHit(HitResults, TraceStart, TraceEnd);
-	DrawLineTraces(GetWorld(), TraceStart, TraceEnd, HitResults, 1.f);
-	//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
-
-	for (auto& HitResult : HitResults)
-	{
-		//if (HitResult.bBlockingHit)
-		//{
-		UE_LOG(LogTemp, Display, TEXT("Hitted %s"), *HitResult.GetActor()->GetName());
-		//}
-
-	}
 
 }
 
