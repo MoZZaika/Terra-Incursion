@@ -13,32 +13,26 @@ class TERRAINCURSION_API ABaseWeapon : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	ABaseWeapon();
-
-	UPROPERTY(EditDefaultsOnly)
-		UStaticMeshComponent* BaseMesh;
-
-	UPROPERTY(EditDefaultsOnly)
-		float WeaponDamage = 10.f;
 
 	virtual void StartAttack();
 
 	virtual void StopAttack();
 
-
-
 protected:
 
+	FCollisionQueryParams CollisionParams;
 	bool isAttack = false;
 
-	FCollisionQueryParams CollisionParams;
-	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* BaseMesh;
 
-	// Called when the game starts or when spawned
+	UPROPERTY(EditDefaultsOnly)
+	float WeaponDamage = 10.f;
+
+
 	virtual void BeginPlay() override;
-
-	virtual void MakeAttack();
 
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const;
 
@@ -46,6 +40,6 @@ protected:
 
 	virtual AController* GetController() const;
 
-	void MakeHit(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd);
+	void GetHitResults(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd);
 
 };

@@ -14,30 +14,24 @@ class TERRAINCURSION_API UWeaponComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
+
 	UWeaponComponent();
 
-	UFUNCTION()
 	void StartAttack();
-
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		FName WeaponArmorySocketName;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		TSubclassOf<AActor> WeaponClass;
-
-
-	UPROPERTY()
-		ABaseWeapon* CurrentWeapon = nullptr;
-
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
 private:
 
-	void SpawnWeapon();
+	ABaseWeapon* CurrentWeapon = nullptr;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+	FName WeaponArmorySocketName = "weapon_r";
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<AActor> WeaponClass = nullptr;
+
+	void BeginPlay() override;
+
+	void SpawnWeapon();
 
 	void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName);
 

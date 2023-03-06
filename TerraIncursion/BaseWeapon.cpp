@@ -5,14 +5,12 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseWeapon, All, All)
 
-// Sets default values
 ABaseWeapon::ABaseWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
     BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-
     SetRootComponent(BaseMesh);
 
     CollisionParams.bReturnPhysicalMaterial = true;
@@ -20,12 +18,9 @@ ABaseWeapon::ABaseWeapon()
     
 }
 
-// Called when the game starts or when spawned
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-    
-
 }
 
 void ABaseWeapon::StartAttack() {
@@ -38,21 +33,13 @@ void ABaseWeapon::StopAttack() {
 
 bool ABaseWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const { return false; }
 
-void ABaseWeapon::MakeAttack() {};
-
-void ABaseWeapon::MakeHit(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd)
+void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd)
 {
     if (!GetWorld()) return;
 
     FCollisionObjectQueryParams ObjectCollisionParams;
-    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);
+    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);    
 
-    //FCollisionQueryParams CollisionParams;
-    //CollisionParams.bReturnPhysicalMaterial = true;
-    //CollisionParams.AddIgnoredActor(GetOwner());
-    
-
-    //GetWorld()->LineTraceMultiByChannel(HitResults, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, CollisionParams);
     GetWorld()->LineTraceMultiByObjectType(HitResults, TraceStart, TraceEnd, ObjectCollisionParams, CollisionParams);
 }
 

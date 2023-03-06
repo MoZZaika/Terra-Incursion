@@ -1,37 +1,27 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "AxeWeapon.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, Display, All)
 
-// Sets default values
 AAxeWeapon::AAxeWeapon()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
-// Called when the game starts or when spawned
 void AAxeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
 	StartAttackRotator = GetActorRotation();
-
 }
 
-// Called every frame
 void AAxeWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	if (isAttack) {
-
-		RayCast();
+		MakeHit();
 		Rotate(DeltaTime);
-
 	}
 
 }
@@ -57,7 +47,6 @@ void AAxeWeapon::Rotate(float DeltaTime) {
 	FQuat QuatRotation = FQuat(Rotation);
 	AddActorLocalRotation(Rotation, false, 0, ETeleportType::None);
 	
-	//UE_LOG(LogAxeWeapon, Display, TEXT("%f"), Angle );
 	if ( Angle >= AttackAngle) {
 		StopAttack();
 	}
@@ -78,7 +67,7 @@ void AAxeWeapon::StopAttack() {
 }
 
 
-void AAxeWeapon::RayCast() {
+void AAxeWeapon::MakeHit() {
 
 	FVector TraceStart, TraceEnd;
 
@@ -87,18 +76,22 @@ void AAxeWeapon::RayCast() {
 	};
 
 	TArray<FHitResult> HitResults;
-	MakeHit(HitResults, TraceStart, TraceEnd);
+	GetHitResults(HitResults, TraceStart, TraceEnd);
 	DrawLineTraces(GetWorld(), TraceStart, TraceEnd, HitResults, 0.1f);
 	//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
 
 	for (auto& HitResult : HitResults)
 	{
-		UE_LOG(LogAxeWeapon, Display, TEXT("Hitted %s"), *HitResult.GetActor()->GetName());
+		AActor* HittedActor = HitResult.GetActor();
+		if (!HittedActor) {
+			return;
+		}
+
+		UE_LOG(LogAxeWeapon, Display, TEXT("Hitted %s"), *HittedActor->GetName());
 		MakeDamage(HitResult);
-		CollisionParams.AddIgnoredActor(HitResult.GetActor());
+		CollisionParams.AddIgnoredActor(HittedActor);
 		
 	}
-	//UE_LOG(LogAxeWeapon, Display, TEXT("\n-----------------\n"));
 }
 
 bool AAxeWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const

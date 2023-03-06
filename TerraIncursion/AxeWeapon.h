@@ -20,6 +20,10 @@ public:
 	// Sets default values for this actor's properties
 	AAxeWeapon();
 
+	virtual void StartAttack() override;
+
+	virtual void StopAttack() override;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -28,11 +32,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		float RotateSpeed = 0.5f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		FName BladeBegginingSocketName;
+	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+		FName BladeBegginingSocketName = "blade_start";
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-		FName BladeEndSocketName;
+	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+		FName BladeEndSocketName = "blade_end";
 
 	float Angle = 0.f;
 
@@ -40,22 +44,14 @@ protected:
 
 	FRotator StartAttackRotator;
 
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	virtual void StartAttack() override;
-
-	virtual void StopAttack() override;
-
-	void RayCast();
-
-	void Rotate(float DeltaTime);
 
 	bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const override;
 
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void MakeHit();
+
+	void Rotate(float DeltaTime);
 
 };
