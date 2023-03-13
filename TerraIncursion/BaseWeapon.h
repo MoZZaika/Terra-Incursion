@@ -7,7 +7,22 @@
 #include "GameFramework/Character.h"
 #include "BaseWeapon.generated.h"
 
-UCLASS()
+USTRUCT()
+struct FTraceLine
+{
+	GENERATED_BODY();
+
+public:
+
+	UPROPERTY()
+	FVector TraceStart;
+
+	UPROPERTY()
+	FVector TraceEnd;
+
+};
+
+UCLASS(Abstract)
 class TERRAINCURSION_API ABaseWeapon : public AActor
 {
 	GENERATED_BODY()
@@ -31,15 +46,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float WeaponDamage = 10.f;
 
+	UPROPERTY(EditAnywhere)
+	bool Debug = true;
 
 	virtual void BeginPlay() override;
 
-	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const;
+	virtual void GetTraceData(FTraceLine & TraceLine) const
+	PURE_VIRTUAL(ABaseWeapon::GetTraceData);
 
 	virtual void MakeDamage(const FHitResult& HitResult);
 
 	virtual AController* GetController() const;
 
-	void GetHitResults(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd);
+	void GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& TraceLine);
 
 };

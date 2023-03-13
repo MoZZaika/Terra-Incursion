@@ -1,5 +1,6 @@
 
 #include "AxeWeapon.h"
+#include "Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, Display, All)
 
@@ -69,22 +70,25 @@ void AAxeWeapon::StopAttack() {
 
 void AAxeWeapon::MakeHit() {
 
-	FVector TraceStart, TraceEnd;
+	FTraceLine TraceLine;
 
-	if (!GetTraceData(TraceStart, TraceEnd)) {
-		return;
-	};
+	GetTraceData(TraceLine);
 
 	TArray<FHitResult> HitResults;
-	GetHitResults(HitResults, TraceStart, TraceEnd);
-	DrawLineTraces(GetWorld(), TraceStart, TraceEnd, HitResults, 0.1f);
-	//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
+	GetHitResults(HitResults, TraceLine);
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	if (Debug) {
+		DrawLineTraces(GetWorld(), TraceLine.TraceStart, TraceLine.TraceEnd, HitResults, 0.1f);
+		//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
+	}
+#endif
 
 	for (auto& HitResult : HitResults)
 	{
 		AActor* HittedActor = HitResult.GetActor();
 		if (!HittedActor) {
-			return;
+			continue;
 		}
 
 		UE_LOG(LogAxeWeapon, Display, TEXT("Hitted %s"), *HittedActor->GetName());
@@ -94,15 +98,17 @@ void AAxeWeapon::MakeHit() {
 	}
 }
 
-bool AAxeWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const
+void AAxeWeapon::GetTraceData(FTraceLine& TraceLine) const
 {
-	if (!BaseMesh) return false;
+	CHECK_ERROR(BaseMesh, TEXT("BaseMesh is nullptr"))
 
-	TraceStart = BaseMesh->GetSocketLocation(BladeBegginingSocketName);
+	CHECK_ERROR(BaseMesh->DoesSocketExist(BladeBegginingSocketName), TEXT("BladeBegginingSocket doesn't exist"))
+	TraceLine.TraceStart = BaseMesh->GetSocketLocation(BladeBegginingSocketName);
 
-	TraceEnd = BaseMesh->GetSocketLocation(BladeEndSocketName);
+	CHECK_ERROR(BaseMesh->DoesSocketExist(BladeEndSocketName), TEXT("BladeEndSocket doesn't exist"))
+	TraceLine.TraceEnd = BaseMesh->GetSocketLocation(BladeEndSocketName);
+	
 
-	return true;
 }
 	
 

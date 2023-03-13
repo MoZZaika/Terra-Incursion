@@ -2,6 +2,7 @@
 
 
 #include "BaseWeapon.h"
+#include "Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseWeapon, All, All)
 
@@ -31,16 +32,15 @@ void ABaseWeapon::StopAttack() {
     isAttack = false;
 }
 
-bool ABaseWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd) const { return false; }
-
-void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, const FVector& TraceStart, const FVector& TraceEnd)
+void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& TraceLIne)
 {
-    if (!GetWorld()) return;
+    auto World = GetWorld();
+    CHECK_ERROR(World,TEXT("World is nullptr"))
 
     FCollisionObjectQueryParams ObjectCollisionParams;
     ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);    
 
-    GetWorld()->LineTraceMultiByObjectType(HitResults, TraceStart, TraceEnd, ObjectCollisionParams, CollisionParams);
+    World->LineTraceMultiByObjectType(HitResults, TraceLIne.TraceStart, TraceLIne.TraceEnd, ObjectCollisionParams, CollisionParams);
 }
 
 

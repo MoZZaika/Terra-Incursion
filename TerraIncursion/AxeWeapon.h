@@ -46,7 +46,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) const override;
+	void GetTraceData(FTraceLine& TraceLine) const override;
 
 	virtual void Tick(float DeltaTime) override;
 

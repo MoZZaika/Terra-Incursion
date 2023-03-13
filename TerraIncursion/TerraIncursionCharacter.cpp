@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Utilities.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATerraIncursionCharacter
@@ -83,10 +84,8 @@ void ATerraIncursionCharacter::SetupPlayerInputComponent(class UInputComponent* 
 void ATerraIncursionCharacter::Attack() {
 
 	auto WeaponComponent = FindComponentByClass<UWeaponComponent>();
-	if (!WeaponComponent) {
-		UE_LOG(LogTemp, Display, TEXT("Character didn`t find WeaponComponent \n"));
-		return;
-	}
+	CHECK_ERROR(WeaponComponent,TEXT("WeaponComponent is nullptr"))
+
 	WeaponComponent->StartAttack();
 }
 

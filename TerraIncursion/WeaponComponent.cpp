@@ -2,8 +2,8 @@
 
 
 #include "WeaponComponent.h"
-
 #include "GameFramework/Character.h"
+#include "Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponComponent, All, All)
 
@@ -21,19 +21,23 @@ void UWeaponComponent::BeginPlay()
 }
 
 void UWeaponComponent::SpawnWeapon() {
+	UWorld* const World = GetWorld();
+	CHECK_ERROR(World, TEXT("World is nullptr"))
 
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
-	if (!Character || !GetWorld()) return;
+	CHECK_ERROR(Character, TEXT("Character is nullptr"))
+
 	const FTransform GeometryTransform = FTransform(Character->GetActorRotation(), Character->GetActorLocation());
 
-	auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass);
-	if (!Weapon) return;
+	auto Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass);
+	CHECK_ERROR(Weapon, TEXT("Weapon is nullptr"))
 
 	Weapon->SetOwner(Character);
 	CurrentWeapon = Weapon;
 
 	USkeletalMeshComponent* CharacterMesh = Character->GetMesh();
-	if (!CharacterMesh) return;
+	CHECK_ERROR(CharacterMesh, TEXT("CharacterMesh is nullptr"))
+
 	AttachWeaponToSocket(Weapon, CharacterMesh, WeaponArmorySocketName);
 
 }
@@ -43,7 +47,8 @@ void UWeaponComponent::StartAttack() {
 }
 
 void UWeaponComponent::AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName) {
-	if (!Weapon || !SceneComponent) return;
+	CHECK_ERROR(Weapon, TEXT("Weapon is nullptr"))
+	CHECK_ERROR(SceneComponent, TEXT("SceneComponent is nullptr"))
 
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false);
 	Weapon->AttachToComponent(SceneComponent, AttachmentRules, SocketName);
