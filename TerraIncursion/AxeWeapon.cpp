@@ -77,7 +77,7 @@ void AAxeWeapon::MakeHit() {
 	TArray<FHitResult> HitResults;
 	GetHitResults(HitResults, TraceLine);
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+#ifdef UE_BUILD_DEVELOPMENT
 	if (Debug) {
 		DrawLineTraces(GetWorld(), TraceLine.TraceStart, TraceLine.TraceEnd, HitResults, 0.1f);
 		//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
