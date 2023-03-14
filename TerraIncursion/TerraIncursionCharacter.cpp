@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Utilities.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATerraIncursionCharacter
@@ -74,6 +75,18 @@ void ATerraIncursionCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ATerraIncursionCharacter::OnResetVR);
+
+	//attack input
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ATerraIncursionCharacter::Attack);
+
+}
+
+void ATerraIncursionCharacter::Attack() {
+
+	auto WeaponComponent = FindComponentByClass<UWeaponComponent>();
+	CHECK_ERROR(WeaponComponent,TEXT("WeaponComponent is nullptr"))
+
+	WeaponComponent->StartAttack();
 }
 
 

@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WeaponComponent.h"
 #include "TerraIncursionCharacter.generated.h"
+
+class UWeaponComponent;
 
 UCLASS(config=Game)
 class ATerraIncursionCharacter : public ACharacter
@@ -18,6 +21,8 @@ class ATerraIncursionCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+
 public:
 	ATerraIncursionCharacter();
 
@@ -33,6 +38,9 @@ protected:
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
+
+	// attack 
+	void Attack();
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
