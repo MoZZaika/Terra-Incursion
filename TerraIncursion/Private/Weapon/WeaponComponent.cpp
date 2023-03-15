@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WeaponComponent.h"
+#include "Weapon/WeaponComponent.h"
 #include "GameFramework/Character.h"
-#include "Utilities.h"
+#include "Miscs/Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponComponent, All, All)
 
@@ -43,6 +43,8 @@ void UWeaponComponent::SpawnWeapon() {
 }
 
 void UWeaponComponent::StartAttack() {
+
+	CHECK_ERROR(CurrentWeapon, TEXT("CurrentWeapon is nullptr"));
 	CurrentWeapon->StartAttack();
 }
 

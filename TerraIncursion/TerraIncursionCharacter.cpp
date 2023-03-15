@@ -8,7 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Utilities.h"
+#include "Miscs/Utilities.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATerraIncursionCharacter

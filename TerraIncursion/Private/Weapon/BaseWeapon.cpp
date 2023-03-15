@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BaseWeapon.h"
-#include "Utilities.h"
+#include "Weapon/BaseWeapon.h"
+#include "Miscs/Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseWeapon, All, All)
 
@@ -38,8 +38,9 @@ void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& Trac
     CHECK_ERROR(World,TEXT("World is nullptr"))
 
     FCollisionObjectQueryParams ObjectCollisionParams;
-    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);    
+    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);  
 
+    UE_LOG(LogBaseWeapon, Display, TEXT("%d"), CollisionParams.GetIgnoredActors().Num());
     World->LineTraceMultiByObjectType(HitResults, TraceLIne.TraceStart, TraceLIne.TraceEnd, ObjectCollisionParams, CollisionParams);
 }
 

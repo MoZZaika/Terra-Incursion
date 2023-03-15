@@ -6,9 +6,11 @@
 #include "GameFramework/Character.h"
 #include "Components/SceneComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Weapon/WeaponComponent.h"
 #include "AIController.h"
 #include "Team.generated.h"
 
+class UWeaponComponent;
 
 USTRUCT(BlueprintType)
 struct FWarrior
@@ -20,6 +22,9 @@ struct FWarrior
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACharacter> warriorClass;
+
+	UPROPERTY(EditAnywhere)
+	UWeaponComponent* weaponComponent = nullptr;
 
 	ACharacter* instance = nullptr;
 	AAIController* controller = nullptr;
@@ -55,4 +60,7 @@ private:
 	virtual void BeginPlay() override;
 	void MoveLeftRight(const float axisValue);
 	void MoveForwardBack(const float axisValue);
+	void AttackLeft();
+	void AttackRight();
+	void AttackForward();
 };
