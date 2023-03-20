@@ -40,7 +40,6 @@ void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& Trac
     FCollisionObjectQueryParams ObjectCollisionParams;
     ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);  
 
-    UE_LOG(LogBaseWeapon, Display, TEXT("%d"), CollisionParams.GetIgnoredActors().Num());
     World->LineTraceMultiByObjectType(HitResults, TraceLIne.TraceStart, TraceLIne.TraceEnd, ObjectCollisionParams, CollisionParams);
 }
 
