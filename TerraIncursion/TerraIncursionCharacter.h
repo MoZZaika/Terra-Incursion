@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "WeaponComponent.h"
+#include "Weapon/WeaponComponent.h"
 #include "TerraIncursionCharacter.generated.h"
 
 class UWeaponComponent;

@@ -1,6 +1,6 @@
 
-#include "AxeWeapon.h"
-#include "Utilities.h"
+#include "Weapon/AxeWeapon.h"
+#include "Miscs/Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, Display, All)
 
@@ -84,18 +84,37 @@ void AAxeWeapon::MakeHit() {
 	}
 #endif
 
+	const FString HitMessagePrefix = TEXT("Hitted ");
+	TArray<AActor*> HittedActors;
+
 	for (auto& HitResult : HitResults)
 	{
 		AActor* HittedActor = HitResult.GetActor();
-		if (!HittedActor) {
+		if (!HittedActor || HittedActors.Contains(HittedActor)) {
 			continue;
 		}
 
-		UE_LOG(LogAxeWeapon, Display, TEXT("Hitted %s"), *HittedActor->GetName());
+
+#ifdef UE_BUILD_DEVELOPMENT
+
+		if (Debug) {
+
+			FString HitMessage = HitMessagePrefix + HittedActor->GetName();
+			UE_LOG(LogAxeWeapon, Display, TEXT("%s"), *HitMessage);
+
+			if (GEngine) {
+				const int32 idKey = -1;
+				const int32 time = 2;
+				GEngine->AddOnScreenDebugMessage(idKey, time, FColor::White, HitMessage);
+			}
+		}
+#endif
+
 		MakeDamage(HitResult);
-		CollisionParams.AddIgnoredActor(HittedActor);
-		
+		HittedActors.Add(HittedActor);
 	}
+
+	CollisionParams.AddIgnoredActors(HittedActors);
 }
 
 void AAxeWeapon::GetTraceData(FTraceLine& TraceLine) const

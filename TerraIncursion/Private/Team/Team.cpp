@@ -16,6 +16,7 @@ ATeam::ATeam()
 
 	uint32 slotIndex = 0;
 	const FString slotNamePrefix = TEXT("Slot_");
+	const FString weaponNamePrefix = TEXT("Weapon_");
 	
 	for (auto& warrior : warriors)
 	{
@@ -32,6 +33,7 @@ ATeam::ATeam()
 		warrior.slot = newSlot;
 
 		++slotIndex;
+
 	}
 }
 
@@ -45,6 +47,7 @@ void ATeam::BeginPlay()
 
 	FActorSpawnParameters spawnParams = { };
 	spawnParams.bNoFail = true;
+	UClass* weaponComponentClass = UWeaponComponent::StaticClass();
 
 	for (auto& warrior : warriors)
 	{
@@ -60,6 +63,9 @@ void ATeam::BeginPlay()
 
 		warrior.instance = Cast<ACharacter>(newWarriorInstance);
 		warrior.controller = Cast<AAIController>(newWarriorInstance->GetController());
+
+		warrior.weaponComponent = Cast<UWeaponComponent>(newWarriorInstance->GetComponentByClass(weaponComponentClass));
+		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
 	}
 }
 
@@ -73,6 +79,24 @@ void ATeam::MoveLeftRight(const float axisValue)
 void ATeam::MoveForwardBack(const float axisValue)
 {
 	moveDirection.X = axisValue;
+}
+
+void ATeam::AttackLeft()
+{
+	CHECK_ERROR(warriors[1].weaponComponent,TEXT("weaponComponent is nullptr"))
+	warriors[1].weaponComponent->StartAttack();
+}
+
+void ATeam::AttackRight()
+{
+	CHECK_ERROR(warriors[2].weaponComponent, TEXT("weaponComponent is nullptr"))
+	warriors[2].weaponComponent->StartAttack();
+}
+
+void ATeam::AttackForward()
+{
+	CHECK_ERROR(warriors[0].weaponComponent, TEXT("weaponComponent is nullptr"))
+	warriors[0].weaponComponent->StartAttack();
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -164,5 +188,9 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis("MoveLeftRight", this, &ATeam::MoveLeftRight);
 	PlayerInputComponent->BindAxis("MoveForwardBack", this, &ATeam::MoveForwardBack);
+
+	PlayerInputComponent->BindAction("AttackLeft", IE_Pressed, this, &ATeam::AttackLeft);
+	PlayerInputComponent->BindAction("AttackRight", IE_Pressed, this, &ATeam::AttackRight);
+	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
 }
 
