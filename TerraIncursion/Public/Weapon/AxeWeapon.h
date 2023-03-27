@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "BaseWeapon.h"
 #include "DrawDebugHelpers.h"
-#include "CollisionDebugDrawingPublic.h"
 #include "AxeWeapon.generated.h"
 
 class UStaticMeshComponent;

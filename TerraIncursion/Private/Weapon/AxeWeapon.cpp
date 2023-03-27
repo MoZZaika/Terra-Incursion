@@ -1,5 +1,6 @@
 
 #include "Weapon/AxeWeapon.h"
+#include "CollisionDebugDrawingPublic.h"
 #include "Miscs/Utilities.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAxeWeapon, Display, All)
@@ -77,9 +78,11 @@ void AAxeWeapon::MakeHit() {
 	TArray<FHitResult> HitResults;
 	GetHitResults(HitResults, TraceLine);
 
-#ifdef UE_BUILD_DEVELOPMENT
+#if UE_BUILD_DEVELOPMENT
 	if (Debug) {
-		DrawLineTraces(GetWorld(), TraceLine.TraceStart, TraceLine.TraceEnd, HitResults, 0.1f);
+		auto World = GetWorld();
+		CHECK_ERROR(World, TEXT("World is nullptr"))
+		DrawLineTraces(World, TraceLine.TraceStart, TraceLine.TraceEnd, HitResults, 0.1f);
 		//DrawDebugDirectionalArrow(GetWorld(), TraceStart, TraceEnd, 120.f, FColor::Magenta, true, -2.f, 0, 5.f);
 	}
 #endif
@@ -95,7 +98,7 @@ void AAxeWeapon::MakeHit() {
 		}
 
 
-#ifdef UE_BUILD_DEVELOPMENT
+#if UE_BUILD_DEVELOPMENT
 
 		if (Debug) {
 
