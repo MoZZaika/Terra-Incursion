@@ -8,7 +8,17 @@ public class TerraIncursion : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay" , "AIModule" });
+		PublicDependencyModuleNames.AddRange(new string[] 
+		{ 
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore", 
+			"HeadMountedDisplay" , 
+			"AIModule", 
+			"NavigationSystem", 
+			"GameplayTasks" 
+		});
 
         PrivateIncludePaths.AddRange(new string[] { "Public" });
 
