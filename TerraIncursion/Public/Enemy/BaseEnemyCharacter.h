@@ -11,6 +11,7 @@ class TERRAINCURSION_API ABaseEnemyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UHealthComponent* HealthComponent;
 
 public:
