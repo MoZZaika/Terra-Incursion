@@ -13,6 +13,10 @@ ABaseEnemyCharacter::ABaseEnemyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void ABaseEnemyCharacter::Attack(ACharacter* target)
+{
+}
+
 void ABaseEnemyCharacter::OnDeath()
 {
 	GetCharacterMovement()->DisableMovement();

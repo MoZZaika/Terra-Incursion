@@ -20,6 +20,8 @@ public:
 
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
+	virtual void Attack(ACharacter* target);
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly)
