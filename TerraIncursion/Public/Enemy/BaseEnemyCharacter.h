@@ -6,6 +6,12 @@
 #include "HealthComponent.h" 
 #include "BaseEnemyCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class FAttackType : uint8
+{
+	MEAL UMETA(DisplayName = "Meal")
+};
+
 UCLASS()
 class TERRAINCURSION_API ABaseEnemyCharacter : public ACharacter
 {
@@ -20,7 +26,7 @@ public:
 
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
-	virtual void Attack(ACharacter* target);
+	virtual void Attack(ACharacter* target, const FAttackType attackType);
 
 protected:
 
@@ -32,6 +38,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float LifeSpanOnDeath = 5.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float MealAttackDamage = 5.0f;
 
 	virtual void OnDeath();
 	virtual void OnHealthChanged(float Health, float HealthDelta);
