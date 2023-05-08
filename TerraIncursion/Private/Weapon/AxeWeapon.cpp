@@ -23,7 +23,7 @@ void AAxeWeapon::Tick(float DeltaTime)
 
 	if (isAttack) {
 		MakeHit();
-		Rotate(DeltaTime);
+		//Rotate(DeltaTime);
 	}
 
 }
@@ -36,8 +36,8 @@ void AAxeWeapon::StartAttack() {
 		return;
 	}
 
-	StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
-	SetActorRelativeRotation(StartAttackRotator);
+	//StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
+	//SetActorRelativeRotation(StartAttackRotator);
 
 }
 
@@ -59,10 +59,10 @@ void AAxeWeapon::StopAttack() {
 
 	Super::StopAttack();
 
-	ClockwiseDirection *= -1;
-	StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
-	SetActorRelativeRotation(StartAttackRotator);
-	Angle = 0.f;
+	//ClockwiseDirection *= -1;
+	//StartAttackRotator = FRotator(ClockwiseDirection * AttackAngle * 0.5, 0.f, 0.f);
+	//SetActorRelativeRotation(StartAttackRotator);
+	//Angle = 0.f;
 
 	CollisionParams.ClearIgnoredActors();
 	CollisionParams.AddIgnoredActor(GetOwner());

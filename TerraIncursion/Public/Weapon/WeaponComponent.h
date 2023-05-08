@@ -8,6 +8,19 @@
 #include "BaseWeapon.h"
 #include "WeaponComponent.generated.h"
 
+USTRUCT(BlueprintType)
+struct FWeaponData
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<ABaseWeapon> WeaponClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UAnimMontage* AttackAnimMontage;
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TERRAINCURSION_API UWeaponComponent : public UActorComponent
 {
@@ -27,7 +40,14 @@ private:
 	FName WeaponArmorySocketName = "weapon_r";
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<AActor> WeaponClass = nullptr;
+	FWeaponData WeaponData;
+
+	void PlayAnimMontage(UAnimMontage* Animation);
+
+	void InitAnimations();
+
+	void OnAttackFinished(USkeletalMeshComponent* MeshComp);
+	void OnAttackStarted(USkeletalMeshComponent* MeshComp);
 
 	void BeginPlay() override;
 
