@@ -48,10 +48,10 @@ void UHealthComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const
 void UHealthComponent::SetHealth(float NewHealth)
 {
 	const auto NextHealth = FMath::Clamp(NewHealth, 0.0f, MaxHealth);
-	const auto HealthDelta = NextHealth - Health;
+	const auto HealthDelta = NextHealth - HealthValue;
 
-	Health = NextHealth;
-	OnHealthChanged.Broadcast(Health, HealthDelta);
+	HealthValue = NextHealth;
+	OnHealthChanged.Broadcast(HealthValue, HealthDelta);
 }
 
 void UHealthComponent::ApplyDamage(float Damage, AController* InstigatedBy)
@@ -61,7 +61,7 @@ void UHealthComponent::ApplyDamage(float Damage, AController* InstigatedBy)
 
 	if (Damage <= 0.0f || IsDead()) return;
 
-	SetHealth(Health - Damage);
+	SetHealth(HealthValue - Damage);
 
 	if (IsDead())
 	{

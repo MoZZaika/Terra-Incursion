@@ -20,9 +20,9 @@ public:
 	FOnHealthChangedSignature OnHealthChanged;
 
 	UFUNCTION(Category = "Health")
-	bool IsDead() const { return FMath::IsNearlyZero(Health); }
+	bool IsDead() const { return FMath::IsNearlyZero(HealthValue); }
 
-	float GetHealth() const { return Health; }
+	float GetHealth() const { return HealthValue; }
 
 	UHealthComponent();
 
@@ -31,11 +31,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "0.0"))
 	float MaxHealth = 100.0f;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Health", meta = (ClampMin = "0.0"))
+	float HealthValue = 0.0f;
+
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-private:
-	float Health = 0.0f;
+protected:
+
 
 	UFUNCTION()
 		void OnTakeAnyDamage(

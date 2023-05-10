@@ -41,6 +41,10 @@ void ABaseEnemyCharacter::OnDeath()
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
+
+	auto controller = GetController();
+	controller->UnPossess();
+	controller->Destroy();
 }
 
 void ABaseEnemyCharacter::OnHealthChanged(float Health, float HealthDelta)
