@@ -2,6 +2,8 @@
 #include "Engine/World.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Enemy/HealthComponent.h"
+#include "Enemy/BaseEnemyCharacter.h"
 #include <Miscs/Utilities.h>
 
 ATeam::ATeam()
@@ -33,6 +35,7 @@ ATeam::ATeam()
 		warrior.slot = newSlot;
 
 		++slotIndex;
+		
 
 	}
 }
@@ -62,10 +65,14 @@ void ATeam::BeginPlay()
 		newWarriorInstance->SpawnDefaultController();
 
 		warrior.instance = Cast<ACharacter>(newWarriorInstance);
+
 		warrior.controller = Cast<AAIController>(newWarriorInstance->GetController());
 
 		warrior.weaponComponent = Cast<UWeaponComponent>(newWarriorInstance->GetComponentByClass(weaponComponentClass));
 		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
+
+		warrior.timerHandle = new FTimerHandle();
+
 	}
 }
 
@@ -83,20 +90,52 @@ void ATeam::MoveForwardBack(const float axisValue)
 
 void ATeam::AttackLeft()
 {
+	FWarrior& warrior = warriors[1];
+	FindTarget(warrior);
+	if (warrior.currentTarget) {
+		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
+	}
 	CHECK_ERROR(warriors[1].weaponComponent,TEXT("weaponComponent is nullptr"))
 	warriors[1].weaponComponent->StartAttack();
+
+	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
+		{
+			warrior.currentTarget = nullptr;
+		},warriorsRetreatDelay, false);
 }
 
 void ATeam::AttackRight()
 {
+	//auto& warrior = warriors[2];
+	FWarrior& warrior = warriors[2];
+	FindTarget(warrior);
+	if (warrior.currentTarget) {
+		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
+	}
 	CHECK_ERROR(warriors[2].weaponComponent, TEXT("weaponComponent is nullptr"))
 	warriors[2].weaponComponent->StartAttack();
+
+	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
+		{
+			warrior.currentTarget = nullptr;
+		}, warriorsRetreatDelay, false);
+	
 }
 
 void ATeam::AttackForward()
 {
+	FWarrior& warrior = warriors[0];
+	FindTarget(warrior);
+	if (warrior.currentTarget) {
+		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
+	}
 	CHECK_ERROR(warriors[0].weaponComponent, TEXT("weaponComponent is nullptr"))
 	warriors[0].weaponComponent->StartAttack();
+
+	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
+		{
+			warrior.currentTarget = nullptr;
+		}, warriorsRetreatDelay, false);
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -128,7 +167,11 @@ void ATeam::Tick(float DeltaTime)
 			break;
 
 		if (warriorSlot == nullptr)
-			break;	
+			break;
+
+		if (warrior.currentTarget != nullptr) {
+			continue;
+		}
 
 		FHitResult outHit = { };
 		const bool hitResult = GetWorld()->LineTraceSingleByChannel(outHit, warriorInstance->GetActorLocation(), warriorSlot->GetComponentLocation(),
@@ -144,7 +187,10 @@ void ATeam::Tick(float DeltaTime)
 		}
 
 		warriorInstance->SetActorRotation(mainSlot->GetComponentRotation());
+		
+
 	}
+
 
 	auto const playerController = Cast<APlayerController>(GetController());
 	CHECK_ERROR(playerController, TEXT("playerController is nullptr!"));
@@ -178,6 +224,9 @@ void ATeam::Tick(float DeltaTime)
 
 	const auto rotator = GetTransform().Rotator().Add(0, angle, 0);
 	mainSlot->AddWorldRotation(rotator);
+
+
+
 }
 
 void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -194,3 +243,65 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
 }
 
+void ATeam::FindTarget(FWarrior & warrior) 
+{
+	TArray<AActor*> FoundedActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundedActors);
+
+	if (FoundedActors.Num() == 0)
+	{
+		return;
+	}
+
+
+	const auto WarriorController = Cast<AAIController>(warrior.controller);
+	if (!WarriorController) return;
+
+	const auto Pawn = WarriorController->GetPawn();
+	if (!Pawn) return;
+
+
+    float BestDistance = warrior.lockTargetDistance;
+	AActor* BestTarget = nullptr;
+	FCollisionQueryParams collisionQueryParams = { };
+	
+	for (auto& warrior : warriors) {
+		collisionQueryParams.AddIgnoredActor(warrior.instance);
+	}
+	collisionQueryParams.AddIgnoredActor(this);
+
+	for (const auto FoundedActor : FoundedActors)
+	{
+		if (!FoundedActor->GetClass()->IsChildOf(ABaseEnemyCharacter::StaticClass()))
+		{
+			continue;
+		};
+
+		const auto HealthComponent = Cast<UHealthComponent>(FoundedActor->GetComponentByClass(UHealthComponent::StaticClass()));
+
+
+		if (!HealthComponent || HealthComponent->IsDead())
+		{
+			continue;
+		}
+
+		const auto CurrentDistance = (FoundedActor->GetActorLocation() - Pawn->GetActorLocation()).Size();
+		if (CurrentDistance < BestDistance)
+		{
+			collisionQueryParams.AddIgnoredActor(FoundedActor);
+			FHitResult outHit = { };
+			const bool hitResult = GetWorld()->LineTraceSingleByChannel(outHit, Pawn->GetActorLocation(), FoundedActor->GetActorLocation(),
+				ECC_Visibility, collisionQueryParams);
+
+			if (hitResult) {
+				continue;
+			}
+			BestDistance = CurrentDistance;
+			BestTarget = FoundedActor;
+		}
+		
+	}
+
+	warrior.currentTarget = BestTarget;
+
+}
