@@ -59,3 +59,8 @@ AController* ABaseWeapon::GetController() const
     return Pawn ? Pawn->GetController() : nullptr;
 }
 
+
+float ABaseWeapon::GetWeaponAttackDistance()
+{
+    return WeaponAttackDistance;
+}

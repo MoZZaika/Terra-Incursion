@@ -32,7 +32,8 @@ struct FWarrior
 	ACharacter* instance = nullptr;
 	AAIController* controller = nullptr;
 	AActor* currentTarget = nullptr;
-	FTimerHandle* timerHandle;
+	FTimerHandle* retreatmentTimerHandle;
+	bool canRunToSlot = true;
 
 
 
@@ -74,5 +75,7 @@ private:
 	void AttackLeft();
 	void AttackRight();
 	void AttackForward();
+	void WarriorMoveToAttack(FWarrior & warrior);
+	void WarriorAttack(FWarrior& warrior);
 	void FindTarget(FWarrior & warrior);
 };

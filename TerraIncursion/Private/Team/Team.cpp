@@ -51,6 +51,7 @@ void ATeam::BeginPlay()
 	FActorSpawnParameters spawnParams = { };
 	spawnParams.bNoFail = true;
 	UClass* weaponComponentClass = UWeaponComponent::StaticClass();
+	UClass* attackDistanceSphereClass = USphereComponent::StaticClass();
 
 	for (auto& warrior : warriors)
 	{
@@ -71,7 +72,7 @@ void ATeam::BeginPlay()
 		warrior.weaponComponent = Cast<UWeaponComponent>(newWarriorInstance->GetComponentByClass(weaponComponentClass));
 		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
 
-		warrior.timerHandle = new FTimerHandle();
+		warrior.retreatmentTimerHandle = new FTimerHandle();
 
 	}
 }
@@ -90,52 +91,17 @@ void ATeam::MoveForwardBack(const float axisValue)
 
 void ATeam::AttackLeft()
 {
-	FWarrior& warrior = warriors[1];
-	FindTarget(warrior);
-	if (warrior.currentTarget) {
-		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
-	}
-	CHECK_ERROR(warriors[1].weaponComponent,TEXT("weaponComponent is nullptr"))
-	warriors[1].weaponComponent->StartAttack();
-
-	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
-		{
-			warrior.currentTarget = nullptr;
-		},warriorsRetreatDelay, false);
+	WarriorMoveToAttack(warriors[1]);
 }
 
 void ATeam::AttackRight()
 {
-	//auto& warrior = warriors[2];
-	FWarrior& warrior = warriors[2];
-	FindTarget(warrior);
-	if (warrior.currentTarget) {
-		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
-	}
-	CHECK_ERROR(warriors[2].weaponComponent, TEXT("weaponComponent is nullptr"))
-	warriors[2].weaponComponent->StartAttack();
-
-	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
-		{
-			warrior.currentTarget = nullptr;
-		}, warriorsRetreatDelay, false);
-	
+	WarriorMoveToAttack(warriors[2]);
 }
 
 void ATeam::AttackForward()
 {
-	FWarrior& warrior = warriors[0];
-	FindTarget(warrior);
-	if (warrior.currentTarget) {
-		warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
-	}
-	CHECK_ERROR(warriors[0].weaponComponent, TEXT("weaponComponent is nullptr"))
-	warriors[0].weaponComponent->StartAttack();
-
-	GetWorld()->GetTimerManager().SetTimer(*warrior.timerHandle, [&]()
-		{
-			warrior.currentTarget = nullptr;
-		}, warriorsRetreatDelay, false);
+	WarriorMoveToAttack(warriors[0]);
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -159,6 +125,7 @@ void ATeam::Tick(float DeltaTime)
 		auto& warriorInstance = warrior.instance;
 		auto& warriorSlot = warrior.slot;
 		auto& warriorController = warrior.controller;
+		auto& currentTarget = warrior.currentTarget;
 
 		if (warriorController == nullptr)
 			break;
@@ -169,9 +136,20 @@ void ATeam::Tick(float DeltaTime)
 		if (warriorSlot == nullptr)
 			break;
 
-		if (warrior.currentTarget != nullptr) {
+		if (currentTarget != nullptr) {
+
+			const float DistanceToTarget = (currentTarget->GetActorLocation() - warriorInstance->GetActorLocation()).Size();
+			if (DistanceToTarget <= warrior.weaponComponent->GetWeaponAttackDistance())
+			{
+				WarriorAttack(warrior);
+			}
 			continue;
 		}
+
+		if (warrior.canRunToSlot == false) {
+			continue;
+		}
+
 
 		FHitResult outHit = { };
 		const bool hitResult = GetWorld()->LineTraceSingleByChannel(outHit, warriorInstance->GetActorLocation(), warriorSlot->GetComponentLocation(),
@@ -303,5 +281,36 @@ void ATeam::FindTarget(FWarrior & warrior)
 	}
 
 	warrior.currentTarget = BestTarget;
+
+}
+
+void ATeam::WarriorMoveToAttack(FWarrior& warrior)
+{
+	const float offset = 100.f;
+	FindTarget(warrior);
+	AActor* currentTarget = warrior.currentTarget;
+	if (currentTarget) {
+		//warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
+		warrior.controller->MoveToActor(currentTarget, warrior.weaponComponent->GetWeaponAttackDistance() - offset);
+	}
+	
+}
+
+void ATeam::WarriorAttack(FWarrior & warrior)
+{
+	warrior.canRunToSlot = false;
+
+	FRotator rotationTowardsTarget = (warrior.currentTarget->GetActorLocation() - warrior.instance->GetActorLocation()).Rotation();
+	warrior.instance->SetActorRotation(rotationTowardsTarget,ETeleportType::None);
+	
+	warrior.currentTarget = nullptr;
+
+	CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"))
+	warrior.weaponComponent->StartAttack();
+
+	GetWorld()->GetTimerManager().SetTimer(*warrior.retreatmentTimerHandle, [&]()
+		{
+			warrior.canRunToSlot = true;
+		}, warriorsRetreatDelay, false);
 
 }

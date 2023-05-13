@@ -32,6 +32,8 @@ public:
 
 	void StartAttack();
 
+	float GetWeaponAttackDistance();
+
 private:
 
 	ABaseWeapon* CurrentWeapon = nullptr;

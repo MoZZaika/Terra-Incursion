@@ -100,3 +100,8 @@ void UWeaponComponent::OnAttackFinished(USkeletalMeshComponent* MeshComp)
 	CurrentWeapon->StopAttack();
 
 }
+
+float UWeaponComponent::GetWeaponAttackDistance()
+{
+	return CurrentWeapon->GetWeaponAttackDistance();
+}
