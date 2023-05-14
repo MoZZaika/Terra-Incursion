@@ -29,13 +29,13 @@ struct FWarriorData
 	UPROPERTY(EditAnywhere)
 	float lockTargetDistance = 100.f;
 
+	UPROPERTY(BlueprintReadOnly)
 	ACharacter* instance = nullptr;
+
 	AAIController* controller = nullptr;
 	AActor* currentTarget = nullptr;
 	FTimerHandle* retreatmentTimerHandle;
 	bool canRunToSlot = true;
-
-
 
 };
 
@@ -49,6 +49,9 @@ public:
 	ATeam();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable)
+	const FWarriorData GetWarriorData(int index) const { return warriors[index]; }
 
 private:
 	static const uint32 maxWarriorCount = 3;
