@@ -30,7 +30,7 @@ EBTNodeResult::Type UAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 	const FAttackType attackType = static_cast<FAttackType>(blackBoard->GetValueAsEnum("CurrentAttackType"));
 
-	if((actor->GetActorLocation() - target->GetActorLocation()).Size() < 300)
+	if((actor->GetActorLocation() - target->GetActorLocation()).Size() < 300 || actor->GetRangedAttack())
 		actor->Attack(target, attackType);
 
 	return EBTNodeResult::Succeeded;

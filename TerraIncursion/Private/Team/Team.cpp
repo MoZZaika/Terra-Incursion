@@ -135,7 +135,7 @@ void ATeam::Tick(float DeltaTime)
 		if (warriorSlot == nullptr)
 			break;
 
-		if (warriorInstance->IsPendingKillPending()) {
+		if (!IsValid(warriorInstance) || warriorInstance->IsPendingKillPending()) {
 			continue;
 		}
 
