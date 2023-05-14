@@ -290,7 +290,6 @@ void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 	FindTarget(warrior);
 	AActor* currentTarget = warrior.currentTarget;
 	if (currentTarget) {
-		//warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
 		warrior.controller->MoveToActor(currentTarget, warrior.weaponComponent->GetWeaponAttackDistance() - offset);
 	}
 	
