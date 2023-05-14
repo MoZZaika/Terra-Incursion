@@ -135,7 +135,7 @@ void ATeam::Tick(float DeltaTime)
 		if (warriorSlot == nullptr)
 			break;
 
-		if (!IsValid(warriorInstance) || warriorInstance->IsPendingKillPending()) {
+		if (warriorInstance->IsPendingKillPending()) {
 			continue;
 		}
 
@@ -304,6 +304,10 @@ void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 
 void ATeam::WarriorAttack(FWarriorData& warrior)
 {
+	if (!warrior.weaponComponent->IsAttackEnabled()) {
+		return;
+	}
+
 	warrior.canRunToSlot = false;
 
 	FRotator rotationTowardsTarget = (warrior.currentTarget->GetActorLocation() - warrior.instance->GetActorLocation()).Rotation();
