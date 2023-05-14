@@ -35,6 +35,8 @@ public:
 
 	virtual void StopAttack();
 
+	float GetWeaponAttackDistance();
+
 protected:
 
 	FCollisionQueryParams CollisionParams;
@@ -45,6 +47,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float WeaponDamage = 10.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float WeaponAttackDistance = 100.f;
 
 	UPROPERTY(EditAnywhere)
 	bool Debug = true;
@@ -59,5 +64,6 @@ protected:
 	virtual AController* GetController() const;
 
 	void GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& TraceLine);
+
 
 };

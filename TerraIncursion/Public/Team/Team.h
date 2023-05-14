@@ -26,8 +26,17 @@ struct FWarriorData
 	UPROPERTY(EditAnywhere)
 	UWeaponComponent* weaponComponent = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	float lockTargetDistance = 100.f;
+
 	ACharacter* instance = nullptr;
 	AAIController* controller = nullptr;
+	AActor* currentTarget = nullptr;
+	FTimerHandle* retreatmentTimerHandle;
+	bool canRunToSlot = true;
+
+
+
 };
 
 UCLASS()
@@ -42,7 +51,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	static const uint32 maxWarriorCount = 4;
+	static const uint32 maxWarriorCount = 3;
 	FVector moveDirection = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere)
@@ -57,10 +66,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USceneComponent*> slots;
 
+	UPROPERTY(EditDefaultsOnly)
+	float warriorsRetreatDelay = 3.0f;
+
 	virtual void BeginPlay() override;
 	void MoveLeftRight(const float axisValue);
 	void MoveForwardBack(const float axisValue);
 	void AttackLeft();
 	void AttackRight();
 	void AttackForward();
+	void WarriorMoveToAttack(FWarrior & warrior);
+	void WarriorAttack(FWarrior& warrior);
+	void FindTarget(FWarrior & warrior);
 };

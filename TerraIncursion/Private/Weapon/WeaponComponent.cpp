@@ -4,6 +4,9 @@
 #include "Weapon/WeaponComponent.h"
 #include "GameFramework/Character.h"
 #include "Miscs/Utilities.h"
+#include "Animations/AnimUtils.h"
+#include "Animations/AttackFinishedAnimNotify.h"
+#include "Animations/AttackStartedAnimNotify.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponComponent, All, All)
 
@@ -18,6 +21,7 @@ void UWeaponComponent::BeginPlay()
 	Super::BeginPlay();
 
 	SpawnWeapon();
+	InitAnimations();
 }
 
 void UWeaponComponent::SpawnWeapon() {
@@ -29,7 +33,7 @@ void UWeaponComponent::SpawnWeapon() {
 
 	const FTransform GeometryTransform = FTransform(Character->GetActorRotation(), Character->GetActorLocation());
 
-	auto Weapon = World->SpawnActor<ABaseWeapon>(WeaponClass);
+	auto Weapon = World->SpawnActor<ABaseWeapon>(WeaponData.WeaponClass);
 	CHECK_ERROR(Weapon, TEXT("Weapon is nullptr"))
 
 	Weapon->SetOwner(Character);
@@ -45,7 +49,10 @@ void UWeaponComponent::SpawnWeapon() {
 void UWeaponComponent::StartAttack() {
 
 	CHECK_ERROR(CurrentWeapon, TEXT("CurrentWeapon is nullptr"));
-	CurrentWeapon->StartAttack();
+
+	CurrentWeapon->StopAttack();
+	PlayAnimMontage(WeaponData.AttackAnimMontage);
+	
 }
 
 void UWeaponComponent::AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* SceneComponent, const FName& SocketName) {
@@ -54,4 +61,47 @@ void UWeaponComponent::AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent
 
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false);
 	Weapon->AttachToComponent(SceneComponent, AttachmentRules, SocketName);
+}
+
+void UWeaponComponent::PlayAnimMontage(UAnimMontage* Animation)
+{
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character) return;
+
+	Character->PlayAnimMontage(Animation);
+}
+
+void UWeaponComponent::InitAnimations()
+{
+	auto AttackFinishedNotify = AnimUtils::FindNotifyByClass<UAttackFinishedAnimNotify>(WeaponData.AttackAnimMontage);
+	CHECK_ERROR(AttackFinishedNotify, TEXT("AttackFinishedNotify is nullptr"));
+	AttackFinishedNotify->OnNotified.AddUObject(this, &UWeaponComponent::OnAttackFinished);
+
+	auto AttackStartedNotify = AnimUtils::FindNotifyByClass<UAttackStartedAnimNotify>(WeaponData.AttackAnimMontage);
+	CHECK_ERROR(AttackStartedNotify, TEXT("AttackStartedNotify is nullptr"));
+	AttackStartedNotify->OnNotified.AddUObject(this, &UWeaponComponent::OnAttackStarted);
+
+}
+
+void UWeaponComponent::OnAttackStarted(USkeletalMeshComponent* MeshComp)
+{
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character || MeshComp != Character->GetMesh()) return;
+
+	CurrentWeapon->StartAttack();
+
+}
+
+void UWeaponComponent::OnAttackFinished(USkeletalMeshComponent* MeshComp)
+{
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	if (!Character || MeshComp != Character->GetMesh()) return;
+
+	CurrentWeapon->StopAttack();
+
+}
+
+float UWeaponComponent::GetWeaponAttackDistance()
+{
+	return CurrentWeapon->GetWeaponAttackDistance();
 }

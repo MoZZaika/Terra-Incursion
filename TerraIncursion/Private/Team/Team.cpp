@@ -2,6 +2,8 @@
 #include "Engine/World.h"
 #include "Camera/CameraComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Enemy/HealthComponent.h"
+#include "Enemy/BaseEnemyCharacter.h"
 #include <Miscs/Utilities.h>
 
 ATeam::ATeam()
@@ -33,6 +35,7 @@ ATeam::ATeam()
 		warrior.slot = newSlot;
 
 		++slotIndex;
+		
 
 	}
 }
@@ -48,6 +51,7 @@ void ATeam::BeginPlay()
 	FActorSpawnParameters spawnParams = { };
 	spawnParams.bNoFail = true;
 	UClass* weaponComponentClass = UWeaponComponent::StaticClass();
+	UClass* attackDistanceSphereClass = USphereComponent::StaticClass();
 
 	for (auto& warrior : warriors)
 	{
@@ -62,10 +66,14 @@ void ATeam::BeginPlay()
 		newWarriorInstance->SpawnDefaultController();
 
 		warrior.instance = Cast<ACharacter>(newWarriorInstance);
+
 		warrior.controller = Cast<AAIController>(newWarriorInstance->GetController());
 
 		warrior.weaponComponent = Cast<UWeaponComponent>(newWarriorInstance->GetComponentByClass(weaponComponentClass));
 		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
+
+		warrior.retreatmentTimerHandle = new FTimerHandle();
+
 	}
 }
 
@@ -83,20 +91,17 @@ void ATeam::MoveForwardBack(const float axisValue)
 
 void ATeam::AttackLeft()
 {
-	CHECK_ERROR(warriors[1].weaponComponent,TEXT("weaponComponent is nullptr"))
-	warriors[1].weaponComponent->StartAttack();
+	WarriorMoveToAttack(warriors[1]);
 }
 
 void ATeam::AttackRight()
 {
-	CHECK_ERROR(warriors[2].weaponComponent, TEXT("weaponComponent is nullptr"))
-	warriors[2].weaponComponent->StartAttack();
+	WarriorMoveToAttack(warriors[2]);
 }
 
 void ATeam::AttackForward()
 {
-	CHECK_ERROR(warriors[0].weaponComponent, TEXT("weaponComponent is nullptr"))
-	warriors[0].weaponComponent->StartAttack();
+	WarriorMoveToAttack(warriors[0]);
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -120,6 +125,7 @@ void ATeam::Tick(float DeltaTime)
 		auto& warriorInstance = warrior.instance;
 		auto& warriorSlot = warrior.slot;
 		auto& warriorController = warrior.controller;
+		auto& currentTarget = warrior.currentTarget;
 
 		if (warriorController == nullptr)
 			break;
@@ -128,7 +134,22 @@ void ATeam::Tick(float DeltaTime)
 			break;
 
 		if (warriorSlot == nullptr)
-			break;	
+			break;
+
+		if (currentTarget != nullptr) {
+
+			const float DistanceToTarget = (currentTarget->GetActorLocation() - warriorInstance->GetActorLocation()).Size();
+			if (DistanceToTarget <= warrior.weaponComponent->GetWeaponAttackDistance())
+			{
+				WarriorAttack(warrior);
+			}
+			continue;
+		}
+
+		if (warrior.canRunToSlot == false) {
+			continue;
+		}
+
 
 		FHitResult outHit = { };
 		const bool hitResult = GetWorld()->LineTraceSingleByChannel(outHit, warriorInstance->GetActorLocation(), warriorSlot->GetComponentLocation(),
@@ -144,7 +165,10 @@ void ATeam::Tick(float DeltaTime)
 		}
 
 		warriorInstance->SetActorRotation(mainSlot->GetComponentRotation());
+		
+
 	}
+
 
 	auto const playerController = Cast<APlayerController>(GetController());
 	CHECK_ERROR(playerController, TEXT("playerController is nullptr!"));
@@ -178,6 +202,9 @@ void ATeam::Tick(float DeltaTime)
 
 	const auto rotator = GetTransform().Rotator().Add(0, angle, 0);
 	mainSlot->AddWorldRotation(rotator);
+
+
+
 }
 
 void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -194,3 +221,96 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
 }
 
+void ATeam::FindTarget(FWarrior & warrior) 
+{
+	TArray<AActor*> FoundedActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundedActors);
+
+	if (FoundedActors.Num() == 0)
+	{
+		return;
+	}
+
+
+	const auto WarriorController = Cast<AAIController>(warrior.controller);
+	if (!WarriorController) return;
+
+	const auto Pawn = WarriorController->GetPawn();
+	if (!Pawn) return;
+
+
+    float BestDistance = warrior.lockTargetDistance;
+	AActor* BestTarget = nullptr;
+	FCollisionQueryParams collisionQueryParams = { };
+	
+	for (auto& warrior : warriors) {
+		collisionQueryParams.AddIgnoredActor(warrior.instance);
+	}
+	collisionQueryParams.AddIgnoredActor(this);
+
+	for (const auto FoundedActor : FoundedActors)
+	{
+		if (!FoundedActor->GetClass()->IsChildOf(ABaseEnemyCharacter::StaticClass()))
+		{
+			continue;
+		};
+
+		const auto HealthComponent = Cast<UHealthComponent>(FoundedActor->GetComponentByClass(UHealthComponent::StaticClass()));
+
+
+		if (!HealthComponent || HealthComponent->IsDead())
+		{
+			continue;
+		}
+
+		const auto CurrentDistance = (FoundedActor->GetActorLocation() - Pawn->GetActorLocation()).Size();
+		if (CurrentDistance < BestDistance)
+		{
+			collisionQueryParams.AddIgnoredActor(FoundedActor);
+			FHitResult outHit = { };
+			const bool hitResult = GetWorld()->LineTraceSingleByChannel(outHit, Pawn->GetActorLocation(), FoundedActor->GetActorLocation(),
+				ECC_Visibility, collisionQueryParams);
+
+			if (hitResult) {
+				continue;
+			}
+			BestDistance = CurrentDistance;
+			BestTarget = FoundedActor;
+		}
+		
+	}
+
+	warrior.currentTarget = BestTarget;
+
+}
+
+void ATeam::WarriorMoveToAttack(FWarrior& warrior)
+{
+	const float offset = 100.f;
+	FindTarget(warrior);
+	AActor* currentTarget = warrior.currentTarget;
+	if (currentTarget) {
+		//warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
+		warrior.controller->MoveToActor(currentTarget, warrior.weaponComponent->GetWeaponAttackDistance() - offset);
+	}
+	
+}
+
+void ATeam::WarriorAttack(FWarrior & warrior)
+{
+	warrior.canRunToSlot = false;
+
+	FRotator rotationTowardsTarget = (warrior.currentTarget->GetActorLocation() - warrior.instance->GetActorLocation()).Rotation();
+	warrior.instance->SetActorRotation(rotationTowardsTarget,ETeleportType::None);
+	
+	warrior.currentTarget = nullptr;
+
+	CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"))
+	warrior.weaponComponent->StartAttack();
+
+	GetWorld()->GetTimerManager().SetTimer(*warrior.retreatmentTimerHandle, [&]()
+		{
+			warrior.canRunToSlot = true;
+		}, warriorsRetreatDelay, false);
+
+}
