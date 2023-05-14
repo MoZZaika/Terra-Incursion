@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Enemy/BaseEnemyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Enemy/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Enemy/BaseEnemyCharacter.h"
 
 ABaseEnemyCharacter::ABaseEnemyCharacter()
 {

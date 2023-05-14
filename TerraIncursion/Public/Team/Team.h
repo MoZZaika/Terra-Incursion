@@ -75,7 +75,7 @@ private:
 	void AttackLeft();
 	void AttackRight();
 	void AttackForward();
-	void WarriorMoveToAttack(FWarrior & warrior);
-	void WarriorAttack(FWarrior& warrior);
-	void FindTarget(FWarrior & warrior);
+	void WarriorMoveToAttack(FWarriorData& warrior);
+	void WarriorAttack(FWarriorData& warrior);
+	void FindTarget(FWarriorData& warrior);
 };

@@ -221,7 +221,7 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
 }
 
-void ATeam::FindTarget(FWarrior & warrior) 
+void ATeam::FindTarget(FWarriorData& warrior)
 {
 	TArray<AActor*> FoundedActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundedActors);
@@ -284,7 +284,7 @@ void ATeam::FindTarget(FWarrior & warrior)
 
 }
 
-void ATeam::WarriorMoveToAttack(FWarrior& warrior)
+void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 {
 	const float offset = 100.f;
 	FindTarget(warrior);
@@ -296,7 +296,7 @@ void ATeam::WarriorMoveToAttack(FWarrior& warrior)
 	
 }
 
-void ATeam::WarriorAttack(FWarrior & warrior)
+void ATeam::WarriorAttack(FWarriorData& warrior)
 {
 	warrior.canRunToSlot = false;
 
