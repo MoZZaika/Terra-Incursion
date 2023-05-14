@@ -304,6 +304,10 @@ void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 
 void ATeam::WarriorAttack(FWarriorData& warrior)
 {
+	if (!warrior.weaponComponent->IsAttackEnabled()) {
+		return;
+	}
+
 	warrior.canRunToSlot = false;
 
 	FRotator rotationTowardsTarget = (warrior.currentTarget->GetActorLocation() - warrior.instance->GetActorLocation()).Rotation();

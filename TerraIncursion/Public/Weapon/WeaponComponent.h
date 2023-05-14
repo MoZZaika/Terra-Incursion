@@ -34,6 +34,8 @@ public:
 
 	float GetWeaponAttackDistance();
 
+	bool IsAttackEnabled();
+
 private:
 
 	ABaseWeapon* CurrentWeapon = nullptr;
@@ -44,12 +46,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FWeaponData WeaponData;
 
+	bool AttackEnabled = true;
+
 	void PlayAnimMontage(UAnimMontage* Animation);
 
 	void InitAnimations();
 
 	void OnAttackFinished(USkeletalMeshComponent* MeshComp);
 	void OnAttackStarted(USkeletalMeshComponent* MeshComp);
+	void OnAttackAnimationFinished(USkeletalMeshComponent* MeshComp);
 
 	void BeginPlay() override;
 

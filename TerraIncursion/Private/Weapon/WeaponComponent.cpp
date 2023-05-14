@@ -6,6 +6,7 @@
 #include "Miscs/Utilities.h"
 #include "Animations/AnimUtils.h"
 #include "Animations/AttackFinishedAnimNotify.h"
+#include "Animations/AttackAnimFinishedAnimNotify.h"
 #include "Animations/AttackStartedAnimNotify.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogWeaponComponent, All, All)
@@ -47,9 +48,8 @@ void UWeaponComponent::SpawnWeapon() {
 }
 
 void UWeaponComponent::StartAttack() {
-
+	AttackEnabled = false;
 	CHECK_ERROR(CurrentWeapon, TEXT("CurrentWeapon is nullptr"));
-
 	CurrentWeapon->StopAttack();
 	PlayAnimMontage(WeaponData.AttackAnimMontage);
 	
@@ -81,6 +81,10 @@ void UWeaponComponent::InitAnimations()
 	CHECK_ERROR(AttackStartedNotify, TEXT("AttackStartedNotify is nullptr"));
 	AttackStartedNotify->OnNotified.AddUObject(this, &UWeaponComponent::OnAttackStarted);
 
+	auto AttackAnimFinishedNotify = AnimUtils::FindNotifyByClass<UAttackAnimFinishedAnimNotify>(WeaponData.AttackAnimMontage);
+	CHECK_ERROR(AttackAnimFinishedNotify, TEXT("AttackAnimFinishedNotify is nullptr"));
+	AttackAnimFinishedNotify->OnNotified.AddUObject(this, &UWeaponComponent::OnAttackAnimationFinished);
+
 }
 
 void UWeaponComponent::OnAttackStarted(USkeletalMeshComponent* MeshComp)
@@ -92,16 +96,26 @@ void UWeaponComponent::OnAttackStarted(USkeletalMeshComponent* MeshComp)
 
 }
 
+void UWeaponComponent::OnAttackAnimationFinished(USkeletalMeshComponent* MeshComp)
+{
+	AttackEnabled = true;
+}
+
 void UWeaponComponent::OnAttackFinished(USkeletalMeshComponent* MeshComp)
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (!Character || MeshComp != Character->GetMesh()) return;
 
 	CurrentWeapon->StopAttack();
-
+	AttackEnabled = true;
 }
 
 float UWeaponComponent::GetWeaponAttackDistance()
 {
 	return CurrentWeapon->GetWeaponAttackDistance();
+}
+
+bool UWeaponComponent::IsAttackEnabled()
+{
+	return AttackEnabled;
 }

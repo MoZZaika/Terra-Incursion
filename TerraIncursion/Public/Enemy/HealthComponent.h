@@ -31,6 +31,7 @@ public:
 
 protected:
 
+
 	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "0.0"))
 	float MaxHealth = 100.0f;
 
@@ -40,12 +41,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-protected:
-
-
 	UFUNCTION()
-		void OnTakeAnyDamage(
-			AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void OnTakeAnyDamage(
+		AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	void SetHealth(float NewHealth);
 
