@@ -28,7 +28,10 @@ EBTNodeResult::Type UAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	if (!target)
 		return EBTNodeResult::Failed;
 
-	actor->Attack(target);
+	const FAttackType attackType = static_cast<FAttackType>(blackBoard->GetValueAsEnum("CurrentAttackType"));
+
+	if((actor->GetActorLocation() - target->GetActorLocation()).Size() < 300)
+		actor->Attack(target, attackType);
 
 	return EBTNodeResult::Succeeded;
 }

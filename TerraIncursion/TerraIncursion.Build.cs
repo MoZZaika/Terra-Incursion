@@ -17,8 +17,8 @@ public class TerraIncursion : ModuleRules
 			"HeadMountedDisplay" , 
 			"AIModule", 
 			"NavigationSystem", 
-			"GameplayTasks" 
-		});
+			"GameplayTasks"
+        });
 
         PrivateIncludePaths.AddRange(new string[] { "Public" });
 

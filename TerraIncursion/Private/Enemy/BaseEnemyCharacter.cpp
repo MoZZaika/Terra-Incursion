@@ -13,8 +13,23 @@ ABaseEnemyCharacter::ABaseEnemyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ABaseEnemyCharacter::Attack(ACharacter* target)
+void ABaseEnemyCharacter::Attack(ACharacter* target, const FAttackType attackType)
 {
+	if (!target)
+		return;
+
+	float dmg = 0;
+
+	switch (attackType)
+	{
+	case FAttackType::MEAL:
+		dmg = MealAttackDamage;
+		break;
+	default:
+		break;
+	}
+
+	target->TakeDamage(dmg, FDamageEvent(), GetController(), this);
 }
 
 void ABaseEnemyCharacter::OnDeath()
@@ -26,6 +41,10 @@ void ABaseEnemyCharacter::OnDeath()
 
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
+
+	auto controller = GetController();
+	controller->UnPossess();
+	controller->Destroy();
 }
 
 void ABaseEnemyCharacter::OnHealthChanged(float Health, float HealthDelta)

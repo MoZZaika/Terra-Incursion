@@ -3,6 +3,8 @@
 
 #include "Weapon/BaseWeapon.h"
 #include "Miscs/Utilities.h"
+#include "Kismet/GameplayStatics.h"
+#include "Team/Warrior.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBaseWeapon, All, All)
 
@@ -15,8 +17,7 @@ ABaseWeapon::ABaseWeapon()
     SetRootComponent(BaseMesh);
 
     CollisionParams.bReturnPhysicalMaterial = true;
-    CollisionParams.AddIgnoredActor(GetOwner());
-    
+   
 }
 
 void ABaseWeapon::BeginPlay()
@@ -26,6 +27,14 @@ void ABaseWeapon::BeginPlay()
 
 void ABaseWeapon::StartAttack() {
     isAttack = true;
+
+    TArray<AActor*> warriors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarrior::StaticClass(), warriors);
+
+    for (const auto& it : warriors)
+    {
+        CollisionParams.AddIgnoredActor(it);
+    }
 }
 
 void ABaseWeapon::StopAttack() {
@@ -38,7 +47,7 @@ void ABaseWeapon::GetHitResults(TArray<FHitResult>& HitResults, FTraceLine& Trac
     CHECK_ERROR(World,TEXT("World is nullptr"))
 
     FCollisionObjectQueryParams ObjectCollisionParams;
-    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_PhysicsBody);  
+    ObjectCollisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_Pawn);  
 
     World->LineTraceMultiByObjectType(HitResults, TraceLIne.TraceStart, TraceLIne.TraceEnd, ObjectCollisionParams, CollisionParams);
 }

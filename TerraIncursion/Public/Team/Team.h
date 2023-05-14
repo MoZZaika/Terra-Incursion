@@ -13,7 +13,7 @@
 class UWeaponComponent;
 
 USTRUCT(BlueprintType)
-struct FWarrior
+struct FWarriorData
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -46,7 +46,7 @@ private:
 	FVector moveDirection = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere)
-	FWarrior warriors[maxWarriorCount];
+	FWarriorData warriors[maxWarriorCount];
 
 	UPROPERTY(EditDefaultsOnly)
 	float teamMovmentSpeed = 1.0f;
