@@ -51,7 +51,6 @@ void ATeam::BeginPlay()
 	FActorSpawnParameters spawnParams = { };
 	spawnParams.bNoFail = true;
 	UClass* weaponComponentClass = UWeaponComponent::StaticClass();
-	UClass* attackDistanceSphereClass = USphereComponent::StaticClass();
 
 	for (auto& warrior : warriors)
 	{
@@ -135,6 +134,10 @@ void ATeam::Tick(float DeltaTime)
 
 		if (warriorSlot == nullptr)
 			break;
+
+		if (warriorInstance->IsPendingKillPending()) {
+			continue;
+		}
 
 		if (currentTarget != nullptr) {
 
@@ -286,11 +289,14 @@ void ATeam::FindTarget(FWarriorData& warrior)
 
 void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 {
+	if (warrior.instance->IsPendingKillPending()) {
+		return;
+	}
+
 	const float offset = 100.f;
 	FindTarget(warrior);
 	AActor* currentTarget = warrior.currentTarget;
 	if (currentTarget) {
-		//warrior.controller->MoveToLocation(warrior.currentTarget->GetActorLocation());
 		warrior.controller->MoveToActor(currentTarget, warrior.weaponComponent->GetWeaponAttackDistance() - offset);
 	}
 	
