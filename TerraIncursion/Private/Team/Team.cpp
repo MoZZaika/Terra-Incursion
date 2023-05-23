@@ -128,25 +128,35 @@ void ATeam::Tick(float DeltaTime)
 
 	for (auto& warrior : warriors)
 	{
+		dead = !IsValid(warrior.instance);
+		if (!dead)
+			break;
+	}
+
+	if (dead)
+	{
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+	}
+
+	for (auto& warrior : warriors)
+	{
 		auto& warriorInstance = warrior.instance;
 		auto& warriorSlot = warrior.slot;
 		auto& warriorController = warrior.controller;
 		auto& currentTarget = warrior.currentTarget;
 
 		if (warriorController == nullptr)
-			break;
+			continue;
 
 		if (warriorInstance == nullptr)
-			break;
+			continue;
 
 		if (warriorSlot == nullptr)
-			break;
+			continue;
 
 		if (warriorInstance->IsPendingKillPending()) {
 			continue;
 		}
-
-		dead = false;
 
 		if (currentTarget != nullptr) {
 
@@ -184,11 +194,6 @@ void ATeam::Tick(float DeltaTime)
 			warrior.canRunToSlot = true;
 		}
 
-	}
-
-	if (dead)
-	{
-		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 	}
 
 	auto const playerController = Cast<APlayerController>(GetController());
