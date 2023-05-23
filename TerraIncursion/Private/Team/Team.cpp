@@ -171,6 +171,11 @@ void ATeam::Tick(float DeltaTime)
 
 		warriorInstance->SetActorRotation(mainSlot->GetComponentRotation());
 		
+		if (warrior.currentTarget && warrior.currentTarget->IsPendingKill())
+		{
+			warrior.currentTarget = nullptr;
+			warrior.canRunToSlot = true;
+		}
 
 	}
 
