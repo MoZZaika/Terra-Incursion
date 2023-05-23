@@ -121,6 +121,8 @@ void ATeam::Tick(float DeltaTime)
 			collisionQueryParams.AddIgnoredActor(warrior.instance);
 	}
 
+	bool dead = true;
+
 	for (auto& warrior : warriors)
 	{
 		auto& warriorInstance = warrior.instance;
@@ -140,6 +142,8 @@ void ATeam::Tick(float DeltaTime)
 		if (warriorInstance->IsPendingKillPending()) {
 			continue;
 		}
+
+		dead = false;
 
 		if (currentTarget != nullptr) {
 
@@ -179,6 +183,10 @@ void ATeam::Tick(float DeltaTime)
 
 	}
 
+	if (dead)
+	{
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+	}
 
 	auto const playerController = Cast<APlayerController>(GetController());
 	CHECK_ERROR(playerController, TEXT("playerController is nullptr!"));
