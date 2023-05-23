@@ -309,7 +309,7 @@ void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 		return;
 	}
 
-	const float offset = 100.f;
+	const float offset = 200.0f;
 	FindTarget(warrior);
 	AActor* currentTarget = warrior.currentTarget;
 	if (currentTarget) {
