@@ -5,6 +5,8 @@
 #include "Enemy/HealthComponent.h"
 #include "Enemy/BaseEnemyCharacter.h"
 #include <Miscs/Utilities.h>
+#include "CollisionDebugDrawingPublic.h"
+#include "Camera/CameraComponent.h"
 
 ATeam::ATeam()
 {
@@ -181,12 +183,15 @@ void ATeam::Tick(float DeltaTime)
 	if (!playerController->DeprojectMousePositionToWorld(mousePosition, mouseDirection))
 		return;
 
-	const float mouseTraceDistance = -mousePosition.Z / mouseDirection.Z;
+	FVector position = mainSlot->GetComponentLocation();
+
+	const float mouseTraceDistance = FMath::Sqrt(FMath::Pow(FMath::Abs(mousePosition.Z - position.Z), 2)
+		+ FMath::Pow(FMath::Abs(mousePosition.Y - position.Y), 2)) * 2;
 
 	mousePosition += mouseDirection * mouseTraceDistance;
 
-	FVector position = mainSlot->GetComponentLocation();
 	position.Z = 0;
+	mousePosition.Z = 0;
 
 	FVector viewDirection = mousePosition - position;
 	viewDirection.Normalize();
@@ -200,13 +205,10 @@ void ATeam::Tick(float DeltaTime)
 	if (FMath::Abs(angle) <= sensitivity)
 		return;
 
-	if (crossVector.Z < 0)
-		angle *= -1;
+	angle *= FMath::Sign(crossVector.Z);
 
 	const auto rotator = GetTransform().Rotator().Add(0, angle, 0);
 	mainSlot->AddWorldRotation(rotator);
-
-
 
 }
 
