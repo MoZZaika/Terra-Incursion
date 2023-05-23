@@ -32,7 +32,7 @@ void ABaseEnemyCharacter::Attack(ACharacter* target, const FAttackType attackTyp
 		break;
 	}
 
-	if(attackType != FAttackType::MEAL)
+	if(attackType != FAttackType::RANGE)
 		target->TakeDamage(dmg, FDamageEvent(), GetController(), this);
 }
 

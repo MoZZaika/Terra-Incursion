@@ -206,8 +206,9 @@ void ATeam::Tick(float DeltaTime)
 		return;
 
 	angle *= FMath::Sign(crossVector.Z);
+	angle /= 100.0f;
 
-	const auto rotator = GetTransform().Rotator().Add(0, angle, 0);
+	const auto rotator = GetTransform().Rotator().Add(0, angle * DeltaTime * 1000, 0);
 	mainSlot->AddWorldRotation(rotator);
 
 }
