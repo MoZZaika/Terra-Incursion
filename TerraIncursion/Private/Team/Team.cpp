@@ -92,17 +92,20 @@ void ATeam::MoveForwardBack(const float axisValue)
 
 void ATeam::AttackLeft()
 {
-	WarriorMoveToAttack(warriors[1]);
+	if(IsValid(warriors[1].instance))
+		WarriorMoveToAttack(warriors[1]);
 }
 
 void ATeam::AttackRight()
 {
-	WarriorMoveToAttack(warriors[2]);
+	if (IsValid(warriors[2].instance))
+		WarriorMoveToAttack(warriors[2]);
 }
 
 void ATeam::AttackForward()
 {
-	WarriorMoveToAttack(warriors[0]);
+	if (IsValid(warriors[0].instance))
+		WarriorMoveToAttack(warriors[0]);
 }
 
 void ATeam::Tick(float DeltaTime)
