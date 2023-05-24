@@ -112,10 +112,11 @@ void ATeam::SpawnHealItem()
 {
 	auto world = GetWorld();
 	
-	if (!world)
+	if (!world || healItemReloadTimer > 0)
 		return;
 	
 	world->SpawnActor(healItem, &mainSlot->GetComponentTransform());
+	healItemReloadTimer = healItemReload;
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -125,6 +126,11 @@ void ATeam::Tick(float DeltaTime)
 	CHECK_ERROR(mainSlot, "mainSlot is nullptr!");
 
 	AddMovementInput(moveDirection, teamMovmentSpeed);
+
+	healItemReloadTimer -= FMath::Min(DeltaTime, healItemReloadTimer);
+
+	if (healItemReloadTimer < 0)
+		healItemReloadTimer = 0;
 
 	FCollisionQueryParams collisionQueryParams = { };
 

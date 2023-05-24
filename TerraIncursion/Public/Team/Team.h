@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const FWarriorData GetWarriorData(int index) const { return warriors[index]; }
 
+	UPROPERTY(BlueprintReadOnly)
+	float healItemReloadTimer = 0;
+
 private:
 	static const uint32 maxWarriorCount = 3;
 	FVector moveDirection = FVector::ZeroVector;
@@ -74,6 +77,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> healItem;
+
+	UPROPERTY(EditDefaultsOnly)
+	float healItemReload = 30.0f;
+
 
 	virtual void BeginPlay() override;
 	void MoveLeftRight(const float axisValue);
