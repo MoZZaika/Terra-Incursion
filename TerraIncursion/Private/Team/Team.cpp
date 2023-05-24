@@ -108,6 +108,16 @@ void ATeam::AttackForward()
 		WarriorMoveToAttack(warriors[0]);
 }
 
+void ATeam::SpawnHealItem()
+{
+	auto world = GetWorld();
+	
+	if (!world)
+		return;
+	
+	world->SpawnActor(healItem, &mainSlot->GetComponentTransform());
+}
+
 void ATeam::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -246,6 +256,8 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AttackLeft", IE_Pressed, this, &ATeam::AttackLeft);
 	PlayerInputComponent->BindAction("AttackRight", IE_Pressed, this, &ATeam::AttackRight);
 	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
+	PlayerInputComponent->BindAction("SpawnHeal", IE_Pressed, this, &ATeam::SpawnHealItem);
+
 }
 
 void ATeam::FindTarget(FWarriorData& warrior)

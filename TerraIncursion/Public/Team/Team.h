@@ -72,12 +72,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float warriorsRetreatDelay = 3.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> healItem;
+
 	virtual void BeginPlay() override;
 	void MoveLeftRight(const float axisValue);
 	void MoveForwardBack(const float axisValue);
 	void AttackLeft();
 	void AttackRight();
 	void AttackForward();
+	void SpawnHealItem();
 	void WarriorMoveToAttack(FWarriorData& warrior);
 	void WarriorAttack(FWarriorData& warrior);
 	void FindTarget(FWarriorData& warrior);
