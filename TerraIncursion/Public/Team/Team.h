@@ -32,6 +32,10 @@ struct FWarriorData
 	UPROPERTY(BlueprintReadOnly)
 	ACharacter* instance = nullptr;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> lockTargetActor;
+	AActor* lockTarget = nullptr;
+
 	AAIController* controller = nullptr;
 	AActor* currentTarget = nullptr;
 	FTimerHandle* retreatmentTimerHandle;
@@ -91,5 +95,5 @@ private:
 	void SpawnHealItem();
 	void WarriorMoveToAttack(FWarriorData& warrior);
 	void WarriorAttack(FWarriorData& warrior);
-	void FindTarget(FWarriorData& warrior);
+	void FindTarget(FWarriorData& warrior, bool marker = false);
 };

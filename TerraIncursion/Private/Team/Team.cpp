@@ -75,6 +75,9 @@ void ATeam::BeginPlay()
 
 		warrior.retreatmentTimerHandle = new FTimerHandle();
 
+
+		warrior.lockTarget = world->SpawnActor(warrior.lockTargetActor);
+		warrior.lockTarget->SetActorHiddenInGame(true);
 	}
 }
 
@@ -174,6 +177,8 @@ void ATeam::Tick(float DeltaTime)
 			continue;
 		}
 
+		FindTarget(warrior, true);
+
 		if (currentTarget != nullptr) {
 
 			const float DistanceToTarget = (currentTarget->GetActorLocation() - warriorInstance->GetActorLocation()).Size();
@@ -266,7 +271,7 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ATeam::FindTarget(FWarriorData& warrior)
+void ATeam::FindTarget(FWarriorData& warrior, bool marker)
 {
 	TArray<AActor*> FoundedActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundedActors);
@@ -308,7 +313,7 @@ void ATeam::FindTarget(FWarriorData& warrior)
 			continue;
 		}
 
-		const auto CurrentDistance = (FoundedActor->GetActorLocation() - Pawn->GetActorLocation()).Size();
+		const auto CurrentDistance = (FoundedActor->GetActorLocation() - warrior.slot->GetComponentLocation()).Size();
 		if (CurrentDistance < BestDistance)
 		{
 			collisionQueryParams.AddIgnoredActor(FoundedActor);
@@ -325,7 +330,18 @@ void ATeam::FindTarget(FWarriorData& warrior)
 		
 	}
 
-	warrior.currentTarget = BestTarget;
+	if(!marker)
+		warrior.currentTarget = BestTarget;
+
+	if (BestTarget)
+	{
+		warrior.lockTarget->SetActorLocation(BestTarget->GetActorLocation());
+		warrior.lockTarget->SetActorHiddenInGame(false);
+	}
+	else
+	{
+		warrior.lockTarget->SetActorHiddenInGame(true);
+	}
 
 }
 
