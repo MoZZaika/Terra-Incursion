@@ -74,7 +74,7 @@ void ATeam::BeginPlay()
 		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
 
 		warrior.retreatmentTimerHandle = new FTimerHandle();
-
+		warrior.lockTimer = new FTimerHandle();
 
 		warrior.lockTarget = world->SpawnActor(warrior.lockTargetActor);
 		warrior.lockTarget->SetActorHiddenInGame(true);
@@ -281,7 +281,6 @@ void ATeam::FindTarget(FWarriorData& warrior, bool marker)
 		return;
 	}
 
-
 	const auto WarriorController = Cast<AAIController>(warrior.controller);
 	if (!WarriorController) return;
 
@@ -333,13 +332,25 @@ void ATeam::FindTarget(FWarriorData& warrior, bool marker)
 	if(!marker)
 		warrior.currentTarget = BestTarget;
 
+
 	if (BestTarget)
 	{
-		warrior.lockTarget->SetActorLocation(BestTarget->GetActorLocation());
-		warrior.lockTarget->SetActorHiddenInGame(false);
+		if (GetWorld()->GetTimerManager().GetTimerRemaining(*warrior.lockTimer) > 0)
+			return; 
+
+		GetWorld()->GetTimerManager().SetTimer(*warrior.lockTimer, [warrior, BestTarget]()
+			{
+				if (IsValid(BestTarget))
+				{
+					warrior.lockTarget->SetActorLocation(BestTarget->GetActorLocation());
+					warrior.lockTarget->SetActorHiddenInGame(false);
+				}
+			}, 0.3f, false);
 	}
 	else
 	{
+		if (GetWorld()->GetTimerManager().GetTimerRemaining(*warrior.lockTimer) > 0)
+			return;
 		warrior.lockTarget->SetActorHiddenInGame(true);
 	}
 

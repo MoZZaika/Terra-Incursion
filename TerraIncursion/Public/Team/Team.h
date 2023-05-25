@@ -29,6 +29,8 @@ struct FWarriorData
 	UPROPERTY(EditAnywhere)
 	float lockTargetDistance = 100.f;
 
+	FTimerHandle* lockTimer;
+
 	UPROPERTY(BlueprintReadOnly)
 	ACharacter* instance = nullptr;
 
