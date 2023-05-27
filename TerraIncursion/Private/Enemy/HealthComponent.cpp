@@ -59,7 +59,7 @@ void UHealthComponent::ApplyDamage(float Damage, AController* InstigatedBy)
 	const auto World = GetWorld();
 	CHECK_ERROR(World, "World is nullptr");
 
-	if (Damage <= 0.0f || IsDead()) return;
+	if (IsDead()) return;
 
 	SetHealth(HealthValue - Damage);
 

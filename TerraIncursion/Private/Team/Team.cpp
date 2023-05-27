@@ -5,6 +5,8 @@
 #include "Enemy/HealthComponent.h"
 #include "Enemy/BaseEnemyCharacter.h"
 #include <Miscs/Utilities.h>
+#include "CollisionDebugDrawingPublic.h"
+#include "Camera/CameraComponent.h"
 
 ATeam::ATeam()
 {
@@ -72,7 +74,10 @@ void ATeam::BeginPlay()
 		CHECK_ERROR(warrior.weaponComponent, TEXT("weaponComponent is nullptr"));
 
 		warrior.retreatmentTimerHandle = new FTimerHandle();
+		warrior.lockTimer = new FTimerHandle();
 
+		warrior.lockTarget = world->SpawnActor(warrior.lockTargetActor);
+		warrior.lockTarget->SetActorHiddenInGame(true);
 	}
 }
 
@@ -90,17 +95,31 @@ void ATeam::MoveForwardBack(const float axisValue)
 
 void ATeam::AttackLeft()
 {
-	WarriorMoveToAttack(warriors[1]);
+	if(IsValid(warriors[1].instance))
+		WarriorMoveToAttack(warriors[1]);
 }
 
 void ATeam::AttackRight()
 {
-	WarriorMoveToAttack(warriors[2]);
+	if (IsValid(warriors[2].instance))
+		WarriorMoveToAttack(warriors[2]);
 }
 
 void ATeam::AttackForward()
 {
-	WarriorMoveToAttack(warriors[0]);
+	if (IsValid(warriors[0].instance))
+		WarriorMoveToAttack(warriors[0]);
+}
+
+void ATeam::SpawnHealItem()
+{
+	auto world = GetWorld();
+	
+	if (!world || healItemReloadTimer > 0)
+		return;
+	
+	world->SpawnActor(healItem, &mainSlot->GetComponentTransform());
+	healItemReloadTimer = healItemReload;
 }
 
 void ATeam::Tick(float DeltaTime)
@@ -111,12 +130,31 @@ void ATeam::Tick(float DeltaTime)
 
 	AddMovementInput(moveDirection, teamMovmentSpeed);
 
+	healItemReloadTimer -= FMath::Min(DeltaTime, healItemReloadTimer);
+
+	if (healItemReloadTimer < 0)
+		healItemReloadTimer = 0;
+
 	FCollisionQueryParams collisionQueryParams = { };
 
 	for (auto& warrior : warriors)
 	{
 		if(warrior.instance)
 			collisionQueryParams.AddIgnoredActor(warrior.instance);
+	}
+
+	bool dead = true;
+
+	for (auto& warrior : warriors)
+	{
+		dead = !IsValid(warrior.instance);
+		if (!dead)
+			break;
+	}
+
+	if (dead)
+	{
+		UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 	}
 
 	for (auto& warrior : warriors)
@@ -127,17 +165,19 @@ void ATeam::Tick(float DeltaTime)
 		auto& currentTarget = warrior.currentTarget;
 
 		if (warriorController == nullptr)
-			break;
+			continue;
 
 		if (warriorInstance == nullptr)
-			break;
+			continue;
 
 		if (warriorSlot == nullptr)
-			break;
+			continue;
 
 		if (warriorInstance->IsPendingKillPending()) {
 			continue;
 		}
+
+		FindTarget(warrior, true);
 
 		if (currentTarget != nullptr) {
 
@@ -169,9 +209,13 @@ void ATeam::Tick(float DeltaTime)
 
 		warriorInstance->SetActorRotation(mainSlot->GetComponentRotation());
 		
+		if (warrior.currentTarget && warrior.currentTarget->IsPendingKill())
+		{
+			warrior.currentTarget = nullptr;
+			warrior.canRunToSlot = true;
+		}
 
 	}
-
 
 	auto const playerController = Cast<APlayerController>(GetController());
 	CHECK_ERROR(playerController, TEXT("playerController is nullptr!"));
@@ -181,12 +225,15 @@ void ATeam::Tick(float DeltaTime)
 	if (!playerController->DeprojectMousePositionToWorld(mousePosition, mouseDirection))
 		return;
 
-	const float mouseTraceDistance = -mousePosition.Z / mouseDirection.Z;
+	FVector position = mainSlot->GetComponentLocation();
+
+	const float mouseTraceDistance = FMath::Sqrt(FMath::Pow(FMath::Abs(mousePosition.Z - position.Z), 2)
+		+ FMath::Pow(FMath::Abs(mousePosition.Y - position.Y), 2)) * 2;
 
 	mousePosition += mouseDirection * mouseTraceDistance;
 
-	FVector position = mainSlot->GetComponentLocation();
 	position.Z = 0;
+	mousePosition.Z = 0;
 
 	FVector viewDirection = mousePosition - position;
 	viewDirection.Normalize();
@@ -200,13 +247,11 @@ void ATeam::Tick(float DeltaTime)
 	if (FMath::Abs(angle) <= sensitivity)
 		return;
 
-	if (crossVector.Z < 0)
-		angle *= -1;
+	angle *= FMath::Sign(crossVector.Z);
+	angle /= 100.0f;
 
-	const auto rotator = GetTransform().Rotator().Add(0, angle, 0);
+	const auto rotator = GetTransform().Rotator().Add(0, angle * DeltaTime * 1000, 0);
 	mainSlot->AddWorldRotation(rotator);
-
-
 
 }
 
@@ -222,9 +267,11 @@ void ATeam::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AttackLeft", IE_Pressed, this, &ATeam::AttackLeft);
 	PlayerInputComponent->BindAction("AttackRight", IE_Pressed, this, &ATeam::AttackRight);
 	PlayerInputComponent->BindAction("AttackForward", IE_Pressed, this, &ATeam::AttackForward);
+	PlayerInputComponent->BindAction("SpawnHeal", IE_Pressed, this, &ATeam::SpawnHealItem);
+
 }
 
-void ATeam::FindTarget(FWarriorData& warrior)
+void ATeam::FindTarget(FWarriorData& warrior, bool marker)
 {
 	TArray<AActor*> FoundedActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemyCharacter::StaticClass(), FoundedActors);
@@ -233,7 +280,6 @@ void ATeam::FindTarget(FWarriorData& warrior)
 	{
 		return;
 	}
-
 
 	const auto WarriorController = Cast<AAIController>(warrior.controller);
 	if (!WarriorController) return;
@@ -266,7 +312,7 @@ void ATeam::FindTarget(FWarriorData& warrior)
 			continue;
 		}
 
-		const auto CurrentDistance = (FoundedActor->GetActorLocation() - Pawn->GetActorLocation()).Size();
+		const auto CurrentDistance = (FoundedActor->GetActorLocation() - warrior.slot->GetComponentLocation()).Size();
 		if (CurrentDistance < BestDistance)
 		{
 			collisionQueryParams.AddIgnoredActor(FoundedActor);
@@ -283,7 +329,30 @@ void ATeam::FindTarget(FWarriorData& warrior)
 		
 	}
 
-	warrior.currentTarget = BestTarget;
+	if(!marker)
+		warrior.currentTarget = BestTarget;
+
+
+	if (BestTarget)
+	{
+		if (GetWorld()->GetTimerManager().GetTimerRemaining(*warrior.lockTimer) > 0)
+			return; 
+
+		GetWorld()->GetTimerManager().SetTimer(*warrior.lockTimer, [warrior, BestTarget]()
+			{
+				if (IsValid(BestTarget))
+				{
+					warrior.lockTarget->SetActorLocation(BestTarget->GetActorLocation());
+					warrior.lockTarget->SetActorHiddenInGame(false);
+				}
+			}, 0.3f, false);
+	}
+	else
+	{
+		if (GetWorld()->GetTimerManager().GetTimerRemaining(*warrior.lockTimer) > 0)
+			return;
+		warrior.lockTarget->SetActorHiddenInGame(true);
+	}
 
 }
 
@@ -293,7 +362,7 @@ void ATeam::WarriorMoveToAttack(FWarriorData& warrior)
 		return;
 	}
 
-	const float offset = 100.f;
+	const float offset = 200.0f;
 	FindTarget(warrior);
 	AActor* currentTarget = warrior.currentTarget;
 	if (currentTarget) {

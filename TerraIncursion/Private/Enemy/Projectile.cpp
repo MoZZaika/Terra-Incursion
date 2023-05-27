@@ -43,6 +43,7 @@ void AProjectile::BeginPlay()
 	if (!targetPos.IsZero())
 	{
 		movDirection = (targetPos - position).GetSafeNormal();
+		SetLifeSpan(5);
 	}
 	else
 	{

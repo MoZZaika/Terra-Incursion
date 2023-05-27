@@ -25,11 +25,25 @@ void ABaseEnemyCharacter::Attack(ACharacter* target, const FAttackType attackTyp
 	case FAttackType::MEAL:
 		dmg = MealAttackDamage;
 		break;
+	case FAttackType::RANGE:
+		GetWorld()->SpawnActor(projectileClass, &GetActorTransform());
+		break;
 	default:
 		break;
 	}
 
-	target->TakeDamage(dmg, FDamageEvent(), GetController(), this);
+	if(attackType != FAttackType::RANGE)
+		target->TakeDamage(dmg, FDamageEvent(), GetController(), this);
+}
+
+bool ABaseEnemyCharacter::GetRangedAttack() const
+{
+	return RangedAttack;
+}
+
+float ABaseEnemyCharacter::GetRangedAttackDistance() const
+{
+	return RangedAttackDistance;
 }
 
 void ABaseEnemyCharacter::OnDeath()

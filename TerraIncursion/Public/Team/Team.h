@@ -29,8 +29,14 @@ struct FWarriorData
 	UPROPERTY(EditAnywhere)
 	float lockTargetDistance = 100.f;
 
+	FTimerHandle* lockTimer;
+
 	UPROPERTY(BlueprintReadOnly)
 	ACharacter* instance = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> lockTargetActor;
+	AActor* lockTarget = nullptr;
 
 	AAIController* controller = nullptr;
 	AActor* currentTarget = nullptr;
@@ -53,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const FWarriorData GetWarriorData(int index) const { return warriors[index]; }
 
+	UPROPERTY(BlueprintReadOnly)
+	float healItemReloadTimer = 0;
+
 private:
 	static const uint32 maxWarriorCount = 3;
 	FVector moveDirection = FVector::ZeroVector;
@@ -72,13 +81,21 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float warriorsRetreatDelay = 3.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> healItem;
+
+	UPROPERTY(EditDefaultsOnly)
+	float healItemReload = 30.0f;
+
+
 	virtual void BeginPlay() override;
 	void MoveLeftRight(const float axisValue);
 	void MoveForwardBack(const float axisValue);
 	void AttackLeft();
 	void AttackRight();
 	void AttackForward();
+	void SpawnHealItem();
 	void WarriorMoveToAttack(FWarriorData& warrior);
 	void WarriorAttack(FWarriorData& warrior);
-	void FindTarget(FWarriorData& warrior);
+	void FindTarget(FWarriorData& warrior, bool marker = false);
 };
