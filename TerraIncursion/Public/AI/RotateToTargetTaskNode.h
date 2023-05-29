@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "TITaskNode.h"
 #include "RotateToTargetTaskNode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TERRAINCURSION_API URotateToTargetTaskNode : public UBTTaskNode
+class TERRAINCURSION_API URotateToTargetTaskNode : public UTITaskNode
 {
 	GENERATED_BODY()
 	
@@ -20,7 +21,7 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	FName playerBlackBoardKey = "Player";
-	FName patrolPointBlackBoardKey = "PatrolPoint";
+	const FName playerBlackBoardKey = "Player";
+	const FName patrolPointBlackBoardKey = "PatrolPoint";
 
 };

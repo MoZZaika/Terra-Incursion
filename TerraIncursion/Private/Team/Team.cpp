@@ -37,7 +37,6 @@ ATeam::ATeam()
 		warrior.slot = newSlot;
 
 		++slotIndex;
-		
 
 	}
 }
@@ -173,7 +172,8 @@ void ATeam::Tick(float DeltaTime)
 		if (warriorSlot == nullptr)
 			continue;
 
-		if (warriorInstance->IsPendingKillPending()) {
+		if (warriorInstance->IsPendingKillPending()) 
+		{
 			continue;
 		}
 

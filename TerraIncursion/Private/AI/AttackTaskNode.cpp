@@ -8,20 +8,15 @@
 
 EBTNodeResult::Type UAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	auto controller = OwnerComp.GetAIOwner();
 
-	if(!controller)
-		return EBTNodeResult::Failed;
-
-	auto actor = Cast<ABaseEnemyCharacter>(controller->GetPawn());
+	auto actor = GetActor(OwnerComp);
 
 	if (!actor)
 		return EBTNodeResult::Failed;
 
-	auto blackBoard = OwnerComp.GetBlackboardComponent();
+	auto blackBoard = GetBlackBoardComponent(OwnerComp);
 	if (!blackBoard)
 		return EBTNodeResult::Failed;
-
 
 	auto target = Cast<ACharacter>(blackBoard->GetValueAsObject(playerBlackBoardKey));
 
@@ -30,7 +25,9 @@ EBTNodeResult::Type UAttackTaskNode::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 	const FAttackType attackType = static_cast<FAttackType>(blackBoard->GetValueAsEnum("CurrentAttackType"));
 
-	if((actor->GetActorLocation() - target->GetActorLocation()).Size() < 500 || actor->GetRangedAttack())
+	const float distanceToTarget = (actor->GetActorLocation() - target->GetActorLocation()).Size();
+
+	if(distanceToTarget < attackRange || actor->GetRangedAttack())
 		actor->Attack(target, attackType);
 
 	return EBTNodeResult::Succeeded;

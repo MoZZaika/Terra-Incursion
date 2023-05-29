@@ -33,9 +33,7 @@ void UFindEnemyService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	TArray<AActor*> percrvieActors { };
 	perceptionComponent->GetCurrentlyPerceivedActors(ATeam::StaticClass(), percrvieActors);
 
-	const FName teamTag = "Team";
-
-	for (auto it : percrvieActors)
+	for (const auto it : percrvieActors)
 	{
 		int32 index = 0;
 		if (it->Tags.Find(teamTag, index))

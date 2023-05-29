@@ -29,7 +29,7 @@ void USelectAttackTypeService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 
 	if (!actor->GetRangedAttack())
 	{
-		blackBoard->SetValueAsEnum("CurrentAttackType", static_cast<uint8>(FAttackType::MEAL));
+		blackBoard->SetValueAsEnum("CurrentAttackType", static_cast<uint8>(FAttackType::MELEE));
 		return;
 	}
 
@@ -38,6 +38,6 @@ void USelectAttackTypeService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	if(actor->GetRangedAttackDistance() < distance)
 		blackBoard->SetValueAsEnum("CurrentAttackType", static_cast<uint8>(FAttackType::RANGE));
 	else
-		blackBoard->SetValueAsEnum("CurrentAttackType", static_cast<uint8>(FAttackType::MEAL));
+		blackBoard->SetValueAsEnum("CurrentAttackType", static_cast<uint8>(FAttackType::MELEE));
 
 }

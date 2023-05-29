@@ -3,17 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTTaskNode.h"
+#include "TITaskNode.h"
 #include "AttackTaskNode.generated.h"
-
 /**
  * 
  */
 UCLASS()
-class TERRAINCURSION_API UAttackTaskNode : public UBTTaskNode
+class TERRAINCURSION_API UAttackTaskNode : public UTITaskNode
 {
 	GENERATED_BODY()
 	
+
+public:
+	
+	UPROPERTY(EditAnywhere)
+	float attackRange = 500.0f;
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

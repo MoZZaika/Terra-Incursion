@@ -15,5 +15,8 @@ void UAttackPositionEnvQueryContext::ProvideContext(FEnvQueryInstance& QueryInst
 		return;
 
 	const auto target = blackboard->GetValueAsObject(enemyActorKey);
-	UEnvQueryItemType_Actor::SetContextHelper(ContextData, Cast<AActor>(target));
+	const auto targetActor = Cast<AActor>(target);
+
+	if(targetActor)
+		UEnvQueryItemType_Actor::SetContextHelper(ContextData, targetActor);
 }

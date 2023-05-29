@@ -12,20 +12,14 @@ EBTNodeResult::Type URotateToTargetTaskNode::ExecuteTask(UBehaviorTreeComponent&
 
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto controller = OwnerComp.GetAIOwner();
-
-	if (!controller)
-		return EBTNodeResult::Failed;
-
-	auto actor = Cast<ABaseEnemyCharacter>(controller->GetPawn());
+	auto actor = GetActor(OwnerComp);
 
 	if (!actor)
 		return EBTNodeResult::Failed;
 
-	auto blackBoard = OwnerComp.GetBlackboardComponent();
+	auto blackBoard = GetBlackBoardComponent(OwnerComp);
 	if (!blackBoard)
 		return EBTNodeResult::Failed;
-
 
 	auto target = Cast<ACharacter>(blackBoard->GetValueAsObject(playerBlackBoardKey));
 	auto patrolPoint = blackBoard->GetValueAsVector(patrolPointBlackBoardKey);
@@ -54,17 +48,12 @@ EBTNodeResult::Type URotateToTargetTaskNode::ExecuteTask(UBehaviorTreeComponent&
 void URotateToTargetTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 
-	auto controller = OwnerComp.GetAIOwner();
-
-	if (!controller)
-		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-
-	auto actor = Cast<ABaseEnemyCharacter>(controller->GetPawn());
+	auto actor = GetActor(OwnerComp);
 
 	if (!actor)
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 
-	auto blackBoard = OwnerComp.GetBlackboardComponent();
+	auto blackBoard = GetBlackBoardComponent(OwnerComp);
 	if (!blackBoard)
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 
@@ -75,7 +64,7 @@ void URotateToTargetTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 
 	const auto forwardVector = actor->GetActorForwardVector();
-	FVector directionToTarget;
+	FVector directionToTarget = { };
 	if (target)
 		directionToTarget = (target->GetActorLocation() - actor->GetActorLocation()).GetSafeNormal();
 	else
@@ -84,11 +73,12 @@ void URotateToTargetTaskNode::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 	const auto product = FVector::CrossProduct(forwardVector, directionToTarget);
 
 	const float angle = FMath::RadiansToDegrees(product.Size() * FMath::Sign(product.Z));
-
-	if (angle < 5)
+	const float allowableError = 5.0f;
+	if (angle < allowableError)
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 
-	FRotator NewRotation = FRotator(0, FMath::Min(angle, FMath::DegreesToRadians(360.0f *DeltaSeconds * 100)), 0);
+	const float rotationSpeed = 360.0f * 100;
+	FRotator NewRotation = FRotator(0, FMath::Min(angle, FMath::DegreesToRadians(rotationSpeed * DeltaSeconds)), 0);
 	FQuat QuatRotation = FQuat(NewRotation);
 	actor->AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
 }

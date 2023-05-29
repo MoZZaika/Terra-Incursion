@@ -10,7 +10,7 @@
 UENUM(BlueprintType)
 enum class FAttackType : uint8
 {
-	MEAL UMETA(DisplayName = "Meal"),
+	MELEE UMETA(DisplayName = "Melee"),
 	RANGE UMETA(DisplayName = "Range")
 };
 

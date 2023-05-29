@@ -22,5 +22,6 @@ protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	FName playerBlackBoardKey = "Player";
+	const FName playerBlackBoardKey = "Player";
+	const FName teamTag = "Team";
 };

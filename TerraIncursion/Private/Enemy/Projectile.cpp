@@ -23,14 +23,14 @@ void AProjectile::BeginPlay()
 	TArray<AActor*> warriors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarrior::StaticClass(), warriors);
 
-	float minDistance = ~0U;
+	float minDistance = MAX_FLT;
 	const FVector position = GetActorLocation();
 	FVector targetPos = FVector::ZeroVector;
 	int32 index = 0;
 
 	for (const auto it : warriors)
 	{
-		float distance = (position - it->GetActorLocation()).Size();
+		const float distance = (position - it->GetActorLocation()).Size();
 		if (distance < minDistance)
 		{
 			minDistance = distance;
@@ -43,7 +43,8 @@ void AProjectile::BeginPlay()
 	if (!targetPos.IsZero())
 	{
 		movDirection = (targetPos - position).GetSafeNormal();
-		SetLifeSpan(5);
+		const float lifeTime = 5.0f;
+		SetLifeSpan(lifeTime);
 	}
 	else
 	{
@@ -58,7 +59,9 @@ void AProjectile::Tick(float DeltaTime)
 
 	SetActorLocation(GetActorLocation() + movDirection * speed * DeltaTime);
 
-	if ((target->GetActorLocation() - GetActorLocation()).Size() <= 150)
+	const float minDistanceToDamage = 150.0f;
+
+	if ((target->GetActorLocation() - GetActorLocation()).Size() <= minDistanceToDamage)
 	{
 		target->TakeDamage(damage, FDamageEvent(), nullptr, this);
 		Destroy();

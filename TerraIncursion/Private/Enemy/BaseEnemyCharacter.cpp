@@ -22,7 +22,7 @@ void ABaseEnemyCharacter::Attack(ACharacter* target, const FAttackType attackTyp
 
 	switch (attackType)
 	{
-	case FAttackType::MEAL:
+	case FAttackType::MELEE:
 		dmg = MealAttackDamage;
 		break;
 	case FAttackType::RANGE:
