@@ -51,9 +51,11 @@ void ABaseEnemyCharacter::OnDeath()
 	GetCharacterMovement()->DisableMovement();
 	SetLifeSpan(LifeSpanOnDeath);
 
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->DestroyComponent();
 
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetSimulatePhysics(true);
 
 	auto controller = GetController();
